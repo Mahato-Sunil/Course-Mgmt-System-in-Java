@@ -1,14 +1,8 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.awt.event.*;
+import java.sql.*;
 import java.util.ArrayList;
 
 public class StudentDashboard extends MouseAdapter implements ActionListener {
@@ -23,9 +17,9 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
     String key;
 
     // database credentials
-    String  username = "Sunil Mahato";
-    String  password = "sunil9860";
-   String url = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=studentdatabase";
+    String username = "Sunil Mahato";
+    String password = "sunil9860";
+    String url = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=studentdatabase";
     String url1 = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=coursedatabase";
 
     String NAME, CONTACT, REGISTRATION, ADDRESS, EMAIL, COURSE;     // DATA FROM THE DATABASE
@@ -86,7 +80,7 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
     // seting dimensions of the components
     public void setDimensions() {
         panel = new JPanel();
-        panel.setSize(1400, 750);
+        panel.setSize(1450, 750);
         panel.setLayout(null);
         panel.setBackground(Color.getHSBColor(180, 6, 100));
         panel.setLocation(40, 10);
@@ -176,7 +170,7 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
         reset.setBackground(new Color(255, 128, 128));
         reset.addActionListener(this);
 
-        message1 = new JLabel("Error Searching course");
+        message1 = new JLabel();
         message1.setBounds(850, 170, 300, 40);
         message1.setForeground(Color.RED);
         message1.setFont(customFont);
@@ -246,7 +240,7 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
         String query = "SELECT * FROM studentregistration WHERE Email = ?";
 
         try {
-             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             Connection connect = DriverManager.getConnection(url, username, password);
             PreparedStatement statement = connect.prepareStatement(query);
             statement.setString(1, key);
@@ -291,12 +285,14 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
         {
             toEnrollField.setText("");
             searchField.setText("");
+            message1.setText("");
+            message2.setText("");
         }
 
         if (e.getSource().equals(searchBtn)) {        // for search button
             String searchKey = searchField.getText();
             if (searchKey.isEmpty()) {
-                System.out.println("Please Enter the key ");
+                message1.setText("Cannot Search Empty field !!");
             } else System.out.println(searchKey);
         }
 
@@ -304,10 +300,11 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
         {
             String enrollKey = toEnrollField.getText();
             if (enrollKey.isEmpty()) {
-                System.out.println("Enter the name first ");
+                message2.setText("Please Enter Name of Course First !!!");
 
-            } else System.out.println(enrollKey);
+            } else message2.setText("Sorry Enrollment Failed !!!");
         }
+
     }
 
     // method to show the course details in the table
@@ -317,7 +314,7 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
         String query1 = "SELECT * FROM Course";
 
         try {
-             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 
             Connection connect = DriverManager.getConnection(url, username, password);  // student
             Connection connect1 = DriverManager.getConnection(url1, username, password); // course databse

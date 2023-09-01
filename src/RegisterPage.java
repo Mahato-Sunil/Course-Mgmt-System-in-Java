@@ -267,7 +267,6 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
 
     public void storeStudentDatabase(String ufname, String ulname, String uregno, String ucontact, String uemail, String uaddress, String ugender, String ucourse) {
         String username = "Sunil Mahato"; 
-
         String password = "sunil9860";
        String url = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=studentdatabase";
 
@@ -302,9 +301,8 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
     // Method to populate the course combo box
     private void populateCourseComboBox() {
         String username = "Sunil Mahato"; 
-
         String password = "sunil9860";
-        String url = "jdbc:mysql://localhost:3306/coursedatabase";
+        String url = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=coursedatabase";
         String query = "SELECT Course FROM course";
 
         try {
@@ -315,6 +313,7 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
 
             while (resultSet.next()) {
                 COURSE = resultSet.getString("Course");
+                System.out.println(COURSE);
                 courseList.add(COURSE);
             }
 

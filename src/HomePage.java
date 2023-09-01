@@ -135,15 +135,14 @@ public class HomePage implements ActionListener {
 
             switch (usermode) {
                 case "Admin":
-                    System.out.println("Admin Panel Choosen ");
+                    message.setText("Admin  Panel Currently Not Available !");
                     break;
                 case "Teacher":
-                    System.out.println("Teacher panel Choosen");
+                    message.setText("Teacher  Panel Currently Not Available !");
                     break;
                 case "Student": {
                     // creationg of validate class
                     Validate valid = new Validate(id, password);
-                    System.out.println(usermode);
                     if (id.isEmpty() || password.isEmpty()) {
                         message.setForeground(Color.red);
                         message.setText("Please Enter All Credentials !");
