@@ -7,19 +7,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$APPLICATION_HOME_DIR$/mysql-connector-java-5.1.23-bin.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$APPLICATION_HOME_DIR$/jar/mssql-jdbc-12.4.0.jre11.jar!/" />
+          <root url="jar://E:/IntelliJ IDEA 2023.2/jar/mssql-jdbc-12.4.0.jre11.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
