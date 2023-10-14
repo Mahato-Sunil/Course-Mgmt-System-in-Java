@@ -7,8 +7,9 @@ public class HomePage implements ActionListener {
     // instantiating a components
     JFrame frame = new JFrame("Course Management");       // for frame
     JMenuBar menu;  // for top menu
-    JMenu home, option;     // contents of menu
-    JMenuItem registerMenu, exitPg;  // menu item for option menu
+    JMenu home, option, registerMenu;     // contents of menu
+    JMenuItem courseMenu, exitPg;  // menu item for option menu
+    JMenuItem TeachReg, StudentReg;     // menu item for Register menu
 
     // for main contains
     JPanel panel;
@@ -31,22 +32,33 @@ public class HomePage implements ActionListener {
 
         home = new JMenu("Home");
         option = new JMenu("Option ");
+        registerMenu = new JMenu("Register");
 
-        registerMenu = new JMenuItem("Register");
-        registerMenu.addActionListener(this);
+        TeachReg = new JMenuItem("Teacher Registration");
+        TeachReg.addActionListener(this);
+
+        StudentReg = new JMenuItem("Student Registration");
+        StudentReg.addActionListener(this);
+
+        // registerMenu.addActionListener(this);
 
         exitPg = new JMenuItem("Exit");
         exitPg.addActionListener(this);
 
+        courseMenu = new JMenuItem("Courses ");
+        courseMenu.addActionListener(this);
+
         // adding the files menu
         option.add(registerMenu);
+        option.add(courseMenu);
         option.add(exitPg);
+
+        registerMenu.add(StudentReg);
+        registerMenu.add(TeachReg);
 
         menu.add(home);     // adding the menu
         menu.add(option);   // adding menu items
         frame.setJMenuBar(menu);
-
-
     }
 
     // adding the components
@@ -118,38 +130,51 @@ public class HomePage implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         // menu -> register
-        if (e.getSource() == registerMenu) {
-            new RegisterPage();
+        if (e.getSource() == StudentReg) {
+            new StudentRegistration();
+            frame.setVisible(false);
+        }
+
+        if (e.getSource() == TeachReg) {
+            new TeacherRegistration();
+            frame.setVisible(false);
+        }
+        if (e.getSource() == courseMenu) {
+            new CourseDashboard();
             frame.setVisible(false);
         }
 
         // menu ->exit
-        if (e.getSource() == exitPg)
-            System.exit(0);
+        if (e.getSource() == exitPg) System.exit(0);
 
         // login button
         if (e.getSource() == submit) {
             String usermode = (String) userMode.getSelectedItem();
             String id = userIdInp.getText();
             String password = String.valueOf(userPwdInp.getPassword());
-
-            switch (usermode) {
-                case "Admin":
-                    message.setText("Admin  Panel Currently Not Available !");
+            // checking for empty input fields
+            if (id.isEmpty() || password.isEmpty()) {
+                message.setForeground(Color.red);
+                message.setText("Please Enter All Credentials !");
+            } else {
+                // creationg of validate class
+                Validate valid = new Validate(id, password);
+                switch (usermode) {
+                    case "Admin":
+                        message.setText("Admin  Panel Currently Not Available !");
+                        break;
+                    case "Teacher": {
+                        if (valid.checkValidity(usermode)) {
+                            frame.setVisible(false);
+                            new TeacherDashboard();
+                        } else {
+                            message.setForeground(Color.red);
+                            message.setText("Username or Password Incorrect !");
+                        }
+                    }
                     break;
-                case "Teacher":
-                    message.setText("Teacher  Panel Currently Not Available !");
-                    break;
-                case "Student": {
-                    // creationg of validate class
-                    Validate valid = new Validate(id, password);
-                    if (id.isEmpty() || password.isEmpty()) {
-                        message.setForeground(Color.red);
-                        message.setText("Please Enter All Credentials !");
-                    } else {
-                        if (valid.checkValidity()) {
-                            message.setForeground(Color.green);
-                            message.setFont(new Font(null, Font.PLAIN, 20));
+                    case "Student": {
+                        if (valid.checkValidity(usermode)) {
                             frame.setVisible(false);
                             new StudentDashboard(id);
                         } else {
@@ -157,8 +182,8 @@ public class HomePage implements ActionListener {
                             message.setText("Username or Password Incorrect !");
                         }
                     }
+                    break;
                 }
-                break;
             }
         }
     }

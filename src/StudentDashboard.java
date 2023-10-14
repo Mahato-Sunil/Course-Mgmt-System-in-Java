@@ -1,14 +1,18 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
-import java.sql.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 
-public class StudentDashboard extends MouseAdapter implements ActionListener {
+public class StudentDashboard extends MouseAdapter implements ActionListener, DatabaseCredentials {
     JFrame frame = new JFrame("Student Dashboard");
-    JMenuBar menu;    // menu items
-    JMenu home, exitM;
+
     JLabel heading, name, contact, email, address, regno, enroll, searchC, toEnroll;
     JTextField oname, ocontact, oemail, oaddress, oreg, searchField, toEnrollField;
     JPanel panel;
@@ -16,36 +20,35 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
     JLabel message1, message2;
     String key;
 
-    // database credentials
-    String username = "Sunil Mahato";
-    String password = "sunil9860";
-    String url = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=studentdatabase";
-    String url1 = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=coursedatabase";
-
-    String NAME, CONTACT, REGISTRATION, ADDRESS, EMAIL, COURSE;     // DATA FROM THE DATABASE
+    String NAME;
+    String CONTACT;
+    String REGISTRATION;
+    String ADDRESS;
+    String EMAIL;
 
     // default object for  showing course table
     JTable aCourseTable, eCourseTable;
     DefaultTableModel aCourseTableModel, eCourseTableModel;
     String[] allCourse = {"ID", "COURSE", "TYPE"};  // for showing availabel courses
-    String[] enrolledCourse = {"ID", "COURSE", "CREDIT", "SCORE", "TYPE"};
+    String[] enrolledCourse = {"ID", "COURSE", "SCORE", "COMPLETED"};
 
     Object[][] allCourseData, enrollCourseData;
 
     // variables to show in the tables for enrolled / selected only
-    String course, courseId, courseAssessment;
-    Double courseCr, courseScore;
+    String course, courseId, courseComplete;
+    Double courseScore;
 
     // variables to show all the list of available courses
     String aCourseId, aCourse, aCourseAssess;
 
     // creation of arraylist to store the details  of course
-    ArrayList<Object> AllCourseList = new ArrayList<>();
-    ArrayList<Object> AllEnrollCourseList = new ArrayList<>();
+    ArrayList<Object[]> AllCourseList = new ArrayList<>();
+    ArrayList<Object[]> AllEnrollCourseList = new ArrayList<>();
 
     // Create a JScrollPane for the course table
     JScrollPane aCourseScrollPane, eCourseScrollPane;
 
+    Boolean isTableChanged = false;
     // font for the overall text
     Font customFont = new Font(null, Font.PLAIN, 20);
 
@@ -54,27 +57,28 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
     int screenWidth = (int) screenSize.getWidth();
     int screenHeight = (int) screenSize.getHeight();
 
+    // Static block to initialize static fields
+    static {
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     // default condtructor
-    StudentDashboard(String ID) {   // id here refers to email
+    public StudentDashboard(String ID) {   // id here refers to email
         key = ID;       // assigning the email to the key
         setDimensions();
         addComponents();
-        setMenu();
         showStudentDetail();
+        showEnrolledCourseData();
         showCourseData();
-
-    }
-
-    // setting the menu
-    public void setMenu() {
-        menu = new JMenuBar();
-        home = new JMenu("Home");
-        home.addMouseListener(this);
-        exitM = new JMenu("Exit");
-        exitM.addMouseListener(this);
-        menu.add(home);     // adding the menu
-        menu.add(exitM);
-        frame.setJMenuBar(menu);
+        // methods call for showing menu
+        publicMenu.setMenu();
+        publicMenu.setMenuDesign();
+        publicMenu.setMenuLogic();
+        frame.setJMenuBar(publicMenu.menu);
     }
 
     // seting dimensions of the components
@@ -240,8 +244,7 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
         String query = "SELECT * FROM studentregistration WHERE Email = ?";
 
         try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            Connection connect = DriverManager.getConnection(url, username, password);
+            Connection connect = DriverManager.getConnection(studentUrl, username, password);
             PreparedStatement statement = connect.prepareStatement(query);
             statement.setString(1, key);
             ResultSet resultSet = statement.executeQuery();
@@ -255,7 +258,6 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
                 ADDRESS = resultSet.getString("Address");
                 EMAIL = resultSet.getString("Email");
                 REGISTRATION = resultSet.getString("Registration");
-                COURSE = resultSet.getString("Course");
             }
         } catch (Exception err) {
             System.out.println("Error" + err);
@@ -268,17 +270,6 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
         oaddress.setText(ADDRESS);
     }
 
-    // event listener
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        // invoking the menu items -> home, exit
-        if (e.getSource().equals(home)) {
-            new HomePage();
-            frame.setVisible(false);
-        }
-        if (e.getSource().equals(exitM)) System.exit(0);
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(reset))     // for reset button
@@ -287,13 +278,14 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
             searchField.setText("");
             message1.setText("");
             message2.setText("");
+            if (isTableChanged) showCourseData();
         }
 
         if (e.getSource().equals(searchBtn)) {        // for search button
             String searchKey = searchField.getText();
             if (searchKey.isEmpty()) {
                 message1.setText("Cannot Search Empty field !!");
-            } else System.out.println(searchKey);
+            } else showSearchResult(searchKey);
         }
 
         if (e.getSource().equals(enrollBtn))     // for course enrollment
@@ -308,62 +300,76 @@ public class StudentDashboard extends MouseAdapter implements ActionListener {
     }
 
     // method to show the course details in the table
-    public void showCourseData() {
-        String query = "SELECT * FROM studentregistration WHERE Registration = ?";
-        String query0 = "SELECT * FROM studentscore WHERE Registration = ?";
-        String query1 = "SELECT * FROM Course";
-
+    public void showEnrolledCourseData() {
+        String query = "SELECT * FROM studentscore WHERE Registration = ?";
         try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-
-            Connection connect = DriverManager.getConnection(url, username, password);  // student
-            Connection connect1 = DriverManager.getConnection(url1, username, password); // course databse
-
+            Connection connect = DriverManager.getConnection(studentUrl, username, password); // course databse
             PreparedStatement statement = connect.prepareStatement(query);
             statement.setString(1, REGISTRATION);
             ResultSet resultSet = statement.executeQuery();
-
-            // data from student database
+            // from studentscore table
             while (resultSet.next()) {
-
+                courseId = resultSet.getString("Course_Id");
+                courseScore = Double.parseDouble(resultSet.getString("Score"));
+                courseComplete = resultSet.getString("isComplete");
                 course = resultSet.getString("Course");
-
-                // from studentscore table
-                PreparedStatement statement0 = connect.prepareStatement(query0);
-                statement0.setString(1, REGISTRATION);
-                ResultSet resultSet0 = statement0.executeQuery();
-
-                while (resultSet0.next()) {
-                    courseId = resultSet0.getString("Course_Id");
-                    courseScore = Double.parseDouble(resultSet0.getString("Score"));
-                }
-
-                // from course table
-                PreparedStatement statement1 = connect1.prepareStatement(query1);
-                ResultSet resultSet1 = statement1.executeQuery();
-
-                // data from  course database
-                while (resultSet1.next()) {
-                    aCourseId = resultSet1.getString("Id");
-                    aCourse = resultSet1.getString("Course");
-                    courseCr = Double.parseDouble(resultSet1.getString("Credit"));
-                    courseAssessment = resultSet1.getString("Assessment");
-                    aCourseAssess = courseAssessment;
-
-                    AllCourseList.add(new Object[]{aCourseId, aCourse, aCourseAssess}); // for all course list
-                }
-                AllEnrollCourseList.add(new Object[]{courseId, course, courseCr, courseScore, courseAssessment});   //for all enrolled course list
+                AllEnrollCourseList.add(new Object[]{courseId, course, courseScore, courseComplete});   //for all enrolled course list
             }
             // Update table models with new data
-            allCourseData = AllCourseList.toArray(new Object[0][]);
-            aCourseTableModel.setDataVector(allCourseData, allCourse);
             enrollCourseData = AllEnrollCourseList.toArray(new Object[0][]);
             eCourseTableModel.setDataVector(enrollCourseData, enrolledCourse);
 
-            connect1.close();
+            connect.close();
+        } catch (Exception err) {
+            System.out.println("Error : " + err);
+            err.printStackTrace();
+        }
+    }
+
+    // to show the course data
+    void showCourseData() {
+        String query = "SELECT *FROM course";
+        try {
+            Connection connect = DriverManager.getConnection(courseUrl, username, password); // course databse
+            PreparedStatement statement = connect.prepareStatement(query);
+            ResultSet resultSet = statement.executeQuery();
+            // from course table
+            while (resultSet.next()) {
+                aCourseId = resultSet.getString("Id");
+                aCourse = resultSet.getString("Course");
+                aCourseAssess = resultSet.getString("Assessment");
+                AllCourseList.add(new Object[]{aCourseId, aCourse, aCourseAssess});   //for all enrolled course list
+            }
+            allCourseData = AllCourseList.toArray(new Object[0][]);
+            aCourseTableModel.setDataVector(allCourseData, allCourse);
             connect.close();
         } catch (Exception err) {
             System.out.println("Error : " + err);
         }
+    }
+
+    // function to show th details of the searched students
+    void showSearchResult(String searchKey) {
+        DefaultTableModel searchModel = (DefaultTableModel) aCourseTable.getModel();
+        searchModel.setRowCount(0); // Clear the current table
+
+        boolean courseFound = false;
+
+        for (Object[] courseData : AllCourseList) { // Use Object[] as the correct data type
+            String courseName = ((String) courseData[1]).toLowerCase();
+            if (courseName.contains(searchKey.toLowerCase())) {
+                searchModel.addRow(courseData);
+                courseFound = true;
+                isTableChanged = true;
+            }
+        }
+
+        if (!courseFound) {
+            JOptionPane.showMessageDialog(null, "Sorry! Unable to find the Course!");
+        }
+    }
+
+    public static void main(String[] args) {
+        new StudentDashboard("sunilmaht642@gmail.com");
     }
 }

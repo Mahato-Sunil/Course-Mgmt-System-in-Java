@@ -3,20 +3,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.beans.Customizer;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Date;
 
 
-public class RegisterPage extends MouseAdapter implements ActionListener {
+public class StudentRegistration extends MouseAdapter implements ActionListener, DatabaseCredentials {
     // instanting the variables
     JFrame frame = new JFrame("Student Management");       // for frame
-    JMenuBar menu;  // for top menu
-    JMenu home, teacherMenu, adminMenu, option;     // contents of menu
-    JMenuItem logItem, exitPg;  // menu item for option menu
-
     // for main contains
     JPanel panel;
     JLabel heading, fname, lname, regno, contact, email, address, gender, course, message, dob;
@@ -27,7 +20,7 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
     ButtonGroup btngrp;
 
     //  string for the courses -> combo box
-    String COURSE;
+    String COURSE, COURSEID;
     ArrayList<String> courseList = new ArrayList<>();
     String[] courseDropDown;
 
@@ -40,48 +33,17 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
     Font customFont = new Font(null, Font.PLAIN, 20);
 
     // main class constructor
-    RegisterPage() {
+    StudentRegistration() {
         setDimensions();
+        setHeading();
+        setCourse();
         populateCourseComboBox();
         addComp();
-        Menu();
-    }
-
-    // function to show the menu items
-    public void Menu() {
-        menu = new JMenuBar();
-
-        home = new JMenu("Home");
-        home.addMouseListener(this);
-        home.setFont(customFont);
-
-        adminMenu = new JMenu("Admin ");
-        adminMenu.addMouseListener(this);
-        adminMenu.setFont(customFont);
-
-        teacherMenu = new JMenu("Teacher");
-        teacherMenu.addMouseListener(this);
-        teacherMenu.setFont(customFont);
-
-        option = new JMenu("Option");
-        option.setFont(customFont);
-
-        logItem = new JMenuItem("Login");
-        logItem.addActionListener(this);
-        logItem.setFont(customFont);
-
-        exitPg = new JMenuItem("Exit");
-        exitPg.addActionListener(this);
-        exitPg.setFont(customFont);
-
-        // adding the files menu
-        option.add(logItem);
-        option.add(exitPg);
-        menu.add(home);     // adding the menu
-        menu.add(adminMenu);
-        menu.add(teacherMenu);
-        menu.add(option);   // adding menu items
-        frame.setJMenuBar(menu);
+//        menuitem call
+        publicMenu.setMenu();
+        publicMenu.setMenuDesign();
+        publicMenu.setMenuLogic();
+        frame.setJMenuBar(publicMenu.menu);
     }
 
     public void setDimensions() {
@@ -93,10 +55,6 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
         panel.setLocation(30, 10);
 
         // setting the dimension of the actual components
-        heading = new JLabel("Student Registration System");
-        heading.setBounds(30, 10, 500, 50);
-        heading.setFont(new Font(null, Font.BOLD, 30));
-        heading.setForeground(Color.BLACK);
 
         fname = new JLabel("First Name :-");
         fname.setBounds(50, 100, 200, 50);
@@ -105,10 +63,6 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
         lname = new JLabel("Last Name :-");
         lname.setBounds(50, 150, 200, 50);
         lname.setFont(customFont);
-
-        regno = new JLabel("Registration Number :-");
-        regno.setBounds(50, 200, 250, 50);
-        regno.setFont(customFont);
 
         contact = new JLabel("Contact No. :-");
         contact.setBounds(50, 250, 250, 50);
@@ -163,13 +117,6 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
         btngrp.add(maleRadio);
         btngrp.add(femaleRadio);
 
-        course = new JLabel("Course :-");
-        course.setBounds(900, 350, 100, 50);
-        course.setFont(customFont);
-
-        courselist = new JComboBox<>();
-        courselist.setBounds(950, 400, 250, 50);
-
         register = new JButton(" Register ");
         register.setBounds(700, 600, 200, 50);
         register.setBackground(new Color(204, 255, 255));
@@ -195,6 +142,31 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
+    // method for setting the headings
+    public void setHeading() {
+//for heading
+        heading = new JLabel("Student Registration System");
+        heading.setBounds(30, 10, 500, 50);
+        heading.setFont(new Font(null, Font.BOLD, 30));
+        heading.setForeground(Color.BLACK);
+
+        // for registration number
+        regno = new JLabel("Registration Number :-");
+        regno.setBounds(50, 200, 250, 50);
+        regno.setFont(customFont);
+    }
+
+    public void setCourse() {
+        course = new JLabel("Course :-");
+        course.setBounds(900, 350, 100, 50);
+        course.setFont(customFont);
+        panel.add(course);
+
+        courselist = new JComboBox<>();
+        courselist.setBounds(950, 400, 250, 50);
+        panel.add(courselist);
+    }
+
     // adding the components
     public void addComp() {
         panel.add(heading);
@@ -214,8 +186,6 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
         panel.add(gender);
         panel.add(maleRadio);
         panel.add(femaleRadio);
-        panel.add(course);
-        panel.add(courselist);
         panel.add(register);
         panel.add(message);
         frame.add(panel);
@@ -224,27 +194,9 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
     // method for invoking the function call and event listeners
     @Override
     public void actionPerformed(ActionEvent e) {
-        // invoking the menu item -> exit and login
-        if (e.getSource().equals(exitPg)) System.exit(0);
-        if (e.getSource().equals(logItem)) {
-            new HomePage();
-            frame.setVisible(false);
-        }
         if (e.getSource().equals(register)) studentDatabase();
-    }
+    }// method to store the student details in database
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        // invoking the menu items -> home, teacher, student
-        if (e.getSource().equals(home)) {
-            new HomePage();
-            frame.setVisible(false);
-        }
-        if (e.getSource().equals(adminMenu)) System.out.println("Admin menu clicked");
-        if (e.getSource().equals(teacherMenu)) System.out.println("teacher menu clicked");
-    }
-
-    // method to store the student details in database
     public void studentDatabase() {
         // getting and storing all the details of student in string variable
         String ufname = fnameInp.getText();
@@ -255,7 +207,6 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
         String uaddress = addressInp.getText();
         String ugender = (maleRadio.isSelected()) ? "Male" : "Female";
         String ucourse = (String) courselist.getSelectedItem();
-        // System.out.println(ugender + " " + ucourse);
 
         // checing for the empty values
         if (ufname.isEmpty() || ulname.isEmpty() || uregno.isEmpty() || ucontact.isEmpty() || uemail.isEmpty() || uaddress.isEmpty())
@@ -266,18 +217,15 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
     }
 
     public void storeStudentDatabase(String ufname, String ulname, String uregno, String ucontact, String uemail, String uaddress, String ugender, String ucourse) {
-        String username = "Sunil Mahato"; 
-        String password = "sunil9860";
-       String url = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=studentdatabase";
-
-        String query = "INSERT INTO studentregistration (Firstname, Lastname, Registration, Contact, Email, Address, Gender, Course) VALUES (?,?,?,?,?,?,?,?)";
+        String query0 = "INSERT INTO studentscore(Course_Id, Registration, Course) Values (?,?,?)";
+        String query = "INSERT INTO studentregistration (Firstname, Lastname, Registration, Contact, Email, Address, Gender) VALUES (?,?,?,?,?,?,?)";
         try {
-             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 
-            Connection connect = DriverManager.getConnection(url, username, password);
+            Connection connect = DriverManager.getConnection(studentUrl, username, password);
+            Connection connect0 = DriverManager.getConnection(studentUrl, username, password);
 
             PreparedStatement statement = connect.prepareStatement(query);
-
             statement.setString(1, ufname);
             statement.setString(2, ulname);
             statement.setString(3, uregno);
@@ -285,35 +233,42 @@ public class RegisterPage extends MouseAdapter implements ActionListener {
             statement.setString(5, uemail);
             statement.setString(6, uaddress);
             statement.setString(7, ugender);
-            statement.setString(8, ucourse);
+
+            PreparedStatement statement1 = connect0.prepareStatement(query0);
+            statement1.setString(1, COURSEID);
+            statement1.setString(2, uregno);
+            statement1.setString(3, ucourse);
 
             int rowsInserted = statement.executeUpdate();
-            if (rowsInserted > 0) {
+            int rowsInserted0 = statement1.executeUpdate();
+
+            if (rowsInserted > 0 && rowsInserted0 > 0) {
                 frame.setVisible(false);
-                new PasswordStorage(uemail, username, password, url);
+                new PasswordStorage(uemail, username, password, studentUrl);
             }
             connect.close();
+            connect0.close();
+
         } catch (ClassNotFoundException | SQLException err) {
             message.setText("Server Error ! Failed to Establish Connection. ");
+            err.printStackTrace();
         }
     }
 
     // Method to populate the course combo box
-    private void populateCourseComboBox() {
-        String username = "Sunil Mahato"; 
-        String password = "sunil9860";
-        String url = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=coursedatabase";
-        String query = "SELECT Course FROM course";
+    public void populateCourseComboBox() {
+        String query = "SELECT Id, Course FROM course";
 
         try {
-             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            Connection connect = DriverManager.getConnection(url, username, password);
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Connection connect = DriverManager.getConnection(courseUrl, username, password);
             PreparedStatement statement = connect.prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
+
                 COURSE = resultSet.getString("Course");
-                System.out.println(COURSE);
+                COURSEID = resultSet.getString("Id");
                 courseList.add(COURSE);
             }
 

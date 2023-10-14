@@ -97,13 +97,23 @@ public class PasswordStorage implements ActionListener {
     // storing the passwords in the database
     private void storePassword(String confirmPwdInp) {
         try {
-             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             Connection connect = DriverManager.getConnection(url, username, password);
-            String query = "INSERT INTO studentpassword (Username, Password) VALUES(?,?)";
-            PreparedStatement statement = connect.prepareStatement(query);
+            String query = "INSERT INTO studentpassword (Username, salt, hashCode) VALUES(?,?,?)";
+            String query1 = "INSERT INTO teacherpassword (Username, salt, hashCode) VALUES(?,?,?)";
+
+            String finalQuery = (url.equals("jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=teacherdatabase")) ? query1 : query;     // checking between the teacher and student
+
+            PreparedStatement statement = connect.prepareStatement(finalQuery);
+
+            // generating the salt and hashcode using confirmPwdInp
+            int hashFunction = (int) (Math.random() * 100000000);
+            String salt = String.valueOf(hashFunction);
+            String hashCode = salt+confirmPwdInp;
 
             statement.setString(1, uemail);
-            statement.setString(2, confirmPwdInp);
+            statement.setString(2, salt);
+            statement.setString(3, hashCode);
 
             // checking if data is inserted in the database
             int rowsInserted = statement.executeUpdate();
