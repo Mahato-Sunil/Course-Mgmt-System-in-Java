@@ -4,21 +4,24 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.ArrayList;
 
 public class StudentDashboard extends MouseAdapter implements ActionListener, DatabaseCredentials {
     JFrame frame = new JFrame("Student Dashboard");
 
     JLabel heading, name, contact, email, address, regno, enroll, searchC, toEnroll;
-    JTextField oname, ocontact, oemail, oaddress, oreg, searchField, toEnrollField;
+    JTextField oname, ocontact, oemail, oaddress, oreg, searchField;
     JPanel panel;
     JButton searchBtn, enrollBtn, reset;
     JLabel message1, message2;
     String key;
+
+    //  string for the courses -> combo box
+    JComboBox<String> enrollCourselist;
+    ArrayList<String> enrollCourseList = new ArrayList<>();
+    ArrayList<String> courseCompleteList = new ArrayList<>();
+    String[] enrollCourseDropdown;
 
     String NAME;
     String CONTACT;
@@ -35,8 +38,7 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
     Object[][] allCourseData, enrollCourseData;
 
     // variables to show in the tables for enrolled / selected only
-    String course, courseId, courseComplete;
-    Double courseScore;
+    String course, courseId, courseComplete, courseScore;
 
     // variables to show all the list of available courses
     String aCourseId, aCourse, aCourseAssess;
@@ -159,8 +161,8 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
         toEnroll.setBounds(850, 550, 150, 40);
         toEnroll.setFont(customFont);
 
-        toEnrollField = new JTextField();
-        toEnrollField.setBounds(850, 600, 300, 45);
+        enrollCourselist = new JComboBox<>();
+        enrollCourselist.setBounds(850, 600, 300, 45);
 
         enrollBtn = new JButton("Get Course");
         enrollBtn.setFocusable(false);
@@ -179,7 +181,7 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
         message1.setForeground(Color.RED);
         message1.setFont(customFont);
 
-        message2 = new JLabel(" Error Enrolling in course");
+        message2 = new JLabel();
         message2.setBounds(1150, 600, 300, 40);
         message2.setForeground(Color.RED);
         message2.setFont(customFont);
@@ -229,7 +231,7 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
         panel.add(searchField);
         panel.add(searchBtn);
         panel.add(toEnroll);
-        panel.add(toEnrollField);
+        panel.add(enrollCourselist);
         panel.add(enrollBtn);
         panel.add(reset);
         panel.add(message1);
@@ -274,7 +276,6 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(reset))     // for reset button
         {
-            toEnrollField.setText("");
             searchField.setText("");
             message1.setText("");
             message2.setText("");
@@ -290,11 +291,11 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
 
         if (e.getSource().equals(enrollBtn))     // for course enrollment
         {
-            String enrollKey = toEnrollField.getText();
+            String enrollKey = String.valueOf(enrollCourselist.getSelectedItem());
             if (enrollKey.isEmpty()) {
                 message2.setText("Please Enter Name of Course First !!!");
 
-            } else message2.setText("Sorry Enrollment Failed !!!");
+            } else getEnrolled(enrollKey);
         }
 
     }
@@ -310,9 +311,10 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
             // from studentscore table
             while (resultSet.next()) {
                 courseId = resultSet.getString("Course_Id");
-                courseScore = Double.parseDouble(resultSet.getString("Score"));
+                courseScore = resultSet.getString("Score");
                 courseComplete = resultSet.getString("isComplete");
                 course = resultSet.getString("Course");
+                courseCompleteList.add(courseComplete);
                 AllEnrollCourseList.add(new Object[]{courseId, course, courseScore, courseComplete});   //for all enrolled course list
             }
             // Update table models with new data
@@ -339,7 +341,11 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
                 aCourse = resultSet.getString("Course");
                 aCourseAssess = resultSet.getString("Assessment");
                 AllCourseList.add(new Object[]{aCourseId, aCourse, aCourseAssess});   //for all enrolled course list
+                enrollCourseList.add(aCourse);
             }
+            enrollCourseDropdown = enrollCourseList.toArray(new String[0]);
+            enrollCourselist.setModel(new DefaultComboBoxModel<>(enrollCourseDropdown));
+
             allCourseData = AllCourseList.toArray(new Object[0][]);
             aCourseTableModel.setDataVector(allCourseData, allCourse);
             connect.close();
@@ -369,7 +375,47 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
         }
     }
 
-    public static void main(String[] args) {
-        new StudentDashboard("sunilmaht642@gmail.com");
+    // function to get enrolled in the course
+    void getEnrolled(String enrollRequest) {
+        String COURSEID = null;
+
+        if (courseCompleteList.contains("FALSE")) {
+            JOptionPane.showMessageDialog(null, "Sorry ! \n Please Complete previous course before enrolling to next one ! ");
+        } else {
+            // getting the course id
+            String query0 = "SELECT ID from course where Course = ?";
+            try {
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                Connection connect0 = DriverManager.getConnection(courseUrl, username, password);
+                PreparedStatement statement0 = connect0.prepareStatement(query0);
+                statement0.setString(1, enrollRequest);
+                ResultSet resultSet = statement0.executeQuery();
+                // from course table
+                while (resultSet.next()) COURSEID = resultSet.getString("Id");
+            } catch (SQLException | ClassNotFoundException err) {
+                err.printStackTrace();
+            }
+
+// inserting the new enrolled course to the database
+            String query = "INSERT INTO studentscore(Course_Id, Registration, Course, isComplete) Values (?,?,?,?)";
+            try {
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                Connection connect = DriverManager.getConnection(studentUrl, username, password);
+                PreparedStatement statement = connect.prepareStatement(query);
+                statement.setString(1, COURSEID);
+                statement.setString(2, REGISTRATION);
+                statement.setString(3, enrollRequest);
+                statement.setString(4, "FALSE");
+
+                int rowsInserted = statement.executeUpdate();
+                if (rowsInserted > 0) {
+                    JOptionPane.showMessageDialog(null, " Welcome to the new Course ! \n Have fun  exploring ");
+                    showEnrolledCourseData();
+                }
+                connect.close();
+            } catch (ClassNotFoundException | SQLException err) {
+                err.printStackTrace();
+            }
+        }
     }
 }

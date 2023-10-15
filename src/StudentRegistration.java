@@ -15,6 +15,7 @@ public class StudentRegistration extends MouseAdapter implements ActionListener,
     JLabel heading, fname, lname, regno, contact, email, address, gender, course, message, dob;
     JTextField fnameInp, lnameInp, regInp, contactInp, emailInp, addressInp, dobInp;
     JRadioButton maleRadio, femaleRadio;
+
     JComboBox<String> courselist;
     JButton register;
     ButtonGroup btngrp;
@@ -217,7 +218,7 @@ public class StudentRegistration extends MouseAdapter implements ActionListener,
     }
 
     public void storeStudentDatabase(String ufname, String ulname, String uregno, String ucontact, String uemail, String uaddress, String ugender, String ucourse) {
-        String query0 = "INSERT INTO studentscore(Course_Id, Registration, Course) Values (?,?,?)";
+        String query0 = "INSERT INTO studentscore(Course_Id, Registration, Course, isComplete) Values (?,?,?,?)";
         String query = "INSERT INTO studentregistration (Firstname, Lastname, Registration, Contact, Email, Address, Gender) VALUES (?,?,?,?,?,?,?)";
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
@@ -238,6 +239,7 @@ public class StudentRegistration extends MouseAdapter implements ActionListener,
             statement1.setString(1, COURSEID);
             statement1.setString(2, uregno);
             statement1.setString(3, ucourse);
+            statement1.setString(4, "TRUE");
 
             int rowsInserted = statement.executeUpdate();
             int rowsInserted0 = statement1.executeUpdate();

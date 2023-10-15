@@ -166,7 +166,7 @@ public class HomePage implements ActionListener {
                     case "Teacher": {
                         if (valid.checkValidity(usermode)) {
                             frame.setVisible(false);
-                            new TeacherDashboard();
+                            new TeacherDashboard(id);
                         } else {
                             message.setForeground(Color.red);
                             message.setText("Username or Password Incorrect !");

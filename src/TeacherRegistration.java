@@ -1,19 +1,23 @@
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
-public class TeacherRegistration extends StudentRegistration implements DatabaseCredentials, ActionListener {
-    // Initialize the variables
-    private DefaultListModel<String> courseModel;
+public class TeacherRegistration extends StudentRegistration implements DatabaseCredentials, ActionListener, ListSelectionListener {
+    // variables for list drop down
+    DefaultListModel<String> expertiseListModel;
+    JList<String> expertiseList;
+    JScrollPane expertiseScrollPane;
+
+    List<String> selectedCourses; // Added to store selected courses
 
     TeacherRegistration() {
         super();
         setHeading();
-        populateCourseComboBox();
         setCourse();
     }
 
@@ -36,34 +40,39 @@ public class TeacherRegistration extends StudentRegistration implements Database
         course = new JLabel("Field of Expertise:-");
         course.setBounds(900, 350, 250, 50);
         course.setFont(customFont);
+
+        expertiseListModel = new DefaultListModel<>();
+
+        expertiseList = new JList<>(expertiseListModel);
+        expertiseList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        expertiseList.setFixedCellHeight(30);
+        expertiseList.addListSelectionListener(this);
+
+        expertiseScrollPane = new JScrollPane(expertiseList);
+        expertiseScrollPane.setBounds(950, 400, 300, 200);
         panel.add(course);
+        panel.add(expertiseScrollPane); // Add the expertiseScrollPane to the panel
 
-        courseModel = new DefaultListModel<>();
-        JList<String> courseList = new JList<>(courseModel);
-        courseList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        courseList.setFixedCellHeight(30);
-
-        JScrollPane courseListPane = new JScrollPane(courseList);
-        courseListPane.setBounds(950, 400, 300, 200);
-        panel.add(courseListPane);
+        // Load expertise data from the database
+        populateCourseComboBox();
     }
+
+    // Load expertise data from the database
 
     @Override
     public void populateCourseComboBox() {
-        String query = "SELECT Course FROM course";
         try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            try (Connection connect = DriverManager.getConnection(courseUrl, username, password); PreparedStatement statement = connect.prepareStatement(query); ResultSet resultSet = statement.executeQuery()) {
-                List<String> courseDataList = new ArrayList<>();
-                while (resultSet.next()) {
-                    String courseData = resultSet.getString("Course");
-                    courseDataList.add(courseData);
-                }
-                courseModel.addAll(courseDataList);
-            } catch (SQLException e) {
-                e.printStackTrace();
+            Connection connection = DriverManager.getConnection(courseUrl, username, password);
+            String sql = "SELECT Course FROM course";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            while (resultSet.next()) {
+                String courseData = resultSet.getString("Course");
+                expertiseListModel.addElement(courseData);
             }
-        } catch (ClassNotFoundException e) {
+            connection.close();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
@@ -78,40 +87,69 @@ public class TeacherRegistration extends StudentRegistration implements Database
         TAddress = addressInp.getText();
         TEmail = emailInp.getText();
         TGender = (maleRadio.isSelected()) ? "Male" : "Female";
-//        TCourse = (String) courselist.getSelectedItem();
-        TCourse = "JAVA";
 
         if (e.getSource().equals(register)) {
             // checking for emptiness of the components
             if (Fname.isEmpty() || Lname.isEmpty() || TeacherID.isEmpty() || TContact.isEmpty() || TEmail.isEmpty() || TAddress.isEmpty())
-                message.setText("Please Enter All the credentials !");
+                JOptionPane.showMessageDialog(null, "Please Enter All the credentials !");
             else {
-                // storing the data to the data base
-                String query = "INSERT INTO teacherRegistration (Firstname, Lastname, TeacherId, Contact, Email, Address, Gender, Course) VALUES (?,?,?,?,?,?,?,?)";
-                try {
-                    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-                    Connection connect = DriverManager.getConnection(teacherUrl, username, password);
-                    PreparedStatement statement = connect.prepareStatement(query);
-                    statement.setString(1, Fname);
-                    statement.setString(2, Lname);
-                    statement.setString(3, TeacherID);
-                    statement.setString(4, TContact);
-                    statement.setString(5, TEmail);
-                    statement.setString(6, TAddress);
-                    statement.setString(7, TGender);
-                    statement.setString(8, TCourse);
+                if (TContact.length() > 10) JOptionPane.showMessageDialog(null, "!! Contact should be of 10 digit !!");
+                else {
+                    try {
+                        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                        Connection connect = DriverManager.getConnection(teacherUrl, username, password);
 
-                    int rowsInserted = statement.executeUpdate();
-                    if (rowsInserted > 0) {
-                        frame.setVisible(false);
-                        new PasswordStorage(TEmail, username, password, teacherUrl);
+                        // Insert teacher information
+                        String teacherQuery = "INSERT INTO teacherRegistration (Firstname, Lastname, TeacherId, Contact, Email, Address, Gender) VALUES (?,?,?,?,?,?,?)";
+                        PreparedStatement teacherStatement = connect.prepareStatement(teacherQuery);
+                        teacherStatement.setString(1, Fname);
+                        teacherStatement.setString(2, Lname);
+                        teacherStatement.setString(3, TeacherID);
+                        teacherStatement.setString(4, TContact);
+                        teacherStatement.setString(5, TEmail);
+                        teacherStatement.setString(6, TAddress);
+                        teacherStatement.setString(7, TGender);
+
+                        int rowsInserted = teacherStatement.executeUpdate();
+
+                        if (rowsInserted > 0) {
+                            // Insert selected expertise into the expertise table
+                            insertSelectedExpertise(TeacherID);
+                            frame.setVisible(false);
+                            new PasswordStorage(TEmail, username, password, teacherUrl);
+                        }
+                        teacherStatement.close();
+                        connect.close();
+                    } catch (ClassNotFoundException | SQLException err) {
+                        message.setText("Server Error! Failed to Establish Connection.");
+                        err.printStackTrace();
                     }
-                    connect.close();
-                } catch (ClassNotFoundException | SQLException err) {
-                    message.setText("Server Error ! Failed to Establish Connection. ");
-                    err.printStackTrace();
                 }
             }
         }
+    }
+
+    // Insert selected expertise into the expertise table
+    private void insertSelectedExpertise(String teacherID) {
+        try {
+            Connection connect = DriverManager.getConnection(teacherUrl, username, password);
+            // Insert teacher's expertise
+            String expertiseQuery = "INSERT INTO expertise (TeacherId, Course) VALUES (?, ?)";
+            PreparedStatement expertiseStatement = connect.prepareStatement(expertiseQuery);
+            for (String course : selectedCourses) {
+                expertiseStatement.setString(1, teacherID);
+                expertiseStatement.setString(2, course);
+                expertiseStatement.executeUpdate();
+            }
+            expertiseStatement.close();
+            connect.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+        // Handle selection change here
+        selectedCourses = expertiseList.getSelectedValuesList();
     }
 }
