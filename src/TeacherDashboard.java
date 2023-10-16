@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,7 +16,14 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
     JButton SearchBtn, Update, Reset;
 
     String nameinp, reginp;   // to store the details of the searched student
+    // Define custom cell editor for the editable columns
 
+    TableCellEditor editableCellEditor;
+    // Define a JComboBox for "Remarks" column
+    JComboBox<String> remarksComboBox;
+
+    // Define custom cell editor for "Remarks" column
+    TableCellEditor remarksCellEditor;
     JTable editableTable; //  editable table to show the detail of searched student
     DefaultTableModel editableTableModel;
     String[] editableTableHeading = {"Course", "Score", "Remarks"};
@@ -157,6 +165,21 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         editableTable.getColumnModel().getColumn(0).setPreferredWidth(10);
         editableScrollPane = new JScrollPane(editableTable);
         editableScrollPane.setBounds(40, 390, 550, 200);
+
+        // Create a DefaultCellEditor for text fields (editable columns)
+        editableCellEditor = new DefaultCellEditor(new JTextField());
+        // Create a JComboBox with options
+        String[] remarksOptions = {"COMPLETED", "PENDING"};
+        remarksComboBox = new JComboBox<>(remarksOptions);
+
+        // Create a custom cell editor for JComboBox
+        remarksCellEditor = new DefaultCellEditor(remarksComboBox);
+
+        // Set custom cell editor for "Remarks" column
+
+        // Set custom cell editor for "Score" and "Remarks" columns
+        editableTable.getColumnModel().getColumn(1).setCellEditor(editableCellEditor);
+        editableTable.getColumnModel().getColumn(2).setCellEditor(remarksCellEditor);
 
         frame.setSize(screenWidth, screenHeight);
         frame.setLocationRelativeTo(null);
@@ -303,9 +326,35 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         } else JOptionPane.showMessageDialog(null, "Sorry ! The student is not Registered in College Database !");
     }
 
-    public static void main(String[] args) {
+    // function to update the details of student
+    void updateData(String searchKey) {
+        String editedScore = (String) editableTable.getValueAt(0, 1);
+        String editedRemark = (String) editableTable.getValueAt(0, 2);
 
-        new TeacherDashboard("manoj@gmail.com");
+        String query = "UPDATE studentscore SET Score =?, isComplete = ?  where Registration = ?";
+        try {
+            Connection connect = DriverManager.getConnection(studentUrl, username, password);
+            PreparedStatement statement = connect.prepareStatement(query);
+            statement.setString(1, editedScore);
+            statement.setString(2, editedRemark);
+            statement.setString(3, searchKey);
+
+            int rowUpdated = statement.executeUpdate();
+            if (rowUpdated > 0) {
+                JOptionPane.showMessageDialog(null, "Data Update Successfull");
+                AllStudentList.clear();
+                studentData = new Object[0][];
+                studentDataTableModel.setDataVector(studentData, studentHeading);
+            } else {
+                JOptionPane.showMessageDialog(null, "Sorry Couldn't Update Data");
+            }
+            connect.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
+    public static void main(String[] args) {
+        new TeacherDashboard("manoj@gmail.com");
+    }
 }
