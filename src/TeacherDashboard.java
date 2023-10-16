@@ -17,13 +17,8 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
 
     String nameinp, reginp;   // to store the details of the searched student
     // Define custom cell editor for the editable columns
-
-    TableCellEditor editableCellEditor;
-    // Define a JComboBox for "Remarks" column
-    JComboBox<String> remarksComboBox;
-
-    // Define custom cell editor for "Remarks" column
-    TableCellEditor remarksCellEditor;
+    TableCellEditor editableCellEditor, remarksCellEditor;
+     JComboBox<String> remarksComboBox;
     JTable editableTable; //  editable table to show the detail of searched student
     DefaultTableModel editableTableModel;
     String[] editableTableHeading = {"Course", "Score", "Remarks"};
@@ -178,8 +173,7 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         // Set custom cell editor for "Remarks" column
 
         // Set custom cell editor for "Score" and "Remarks" columns
-        editableTable.getColumnModel().getColumn(1).setCellEditor(editableCellEditor);
-        editableTable.getColumnModel().getColumn(2).setCellEditor(remarksCellEditor);
+        editableTable.getColumnModel().getColumn(1).setCellEditor(editableCellEditor);        editableTable.getColumnModel().getColumn(2).setCellEditor(remarksCellEditor);
 
         frame.setSize(screenWidth, screenHeight);
         frame.setLocationRelativeTo(null);
