@@ -320,7 +320,7 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
             // Update table models with new data
             enrollCourseData = AllEnrollCourseList.toArray(new Object[0][]);
             eCourseTableModel.setDataVector(enrollCourseData, enrolledCourse);
-
+            eCourseTableModel.fireTableDataChanged();
             connect.close();
         } catch (Exception err) {
             System.out.println("Error : " + err);
@@ -348,6 +348,7 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
 
             allCourseData = AllCourseList.toArray(new Object[0][]);
             aCourseTableModel.setDataVector(allCourseData, allCourse);
+            eCourseTableModel.fireTableDataChanged();
             connect.close();
         } catch (Exception err) {
             System.out.println("Error : " + err);

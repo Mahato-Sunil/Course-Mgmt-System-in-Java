@@ -10,12 +10,19 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
     // initializing the global variables
     JFrame frame = new JFrame("Teacher DashBoard");
     JPanel panel;
-    JLabel heading, TName, TId, search, SName, reg, course, score, overview;
-    JTextField TNameField, TIdField, SearchField, SNameField, RegField, CourseField, ScoreField; // search field
+    JLabel heading, TName, TId, search, SName, reg, overview;
+    JTextField TNameField, TIdField, SearchField, SNameField, RegField;
     JButton SearchBtn, Update, Reset;
-    JCheckBox isCompleteBox;
 
-    String nameinp, reginp, courseinp, scoreinp, completeinp;   // to store the details of the searched student
+    String nameinp, reginp;   // to store the details of the searched student
+
+    JTable editableTable; //  editable table to show the detail of searched student
+    DefaultTableModel editableTableModel;
+    String[] editableTableHeading = {"Course", "Score", "Remarks"};
+    String editableCourse, editableScore, editableRemarks;
+    ArrayList<Object[]> editableList = new ArrayList<>();
+    Object[][] editableData;
+    JScrollPane editableScrollPane;
 
     // default object for  showing studnet  table
     JTable studentTable;
@@ -48,13 +55,14 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
     TeacherDashboard(String id) { // id refers to the email
         this.teacherEmail = id;  // passing the value
         setDimensions();
-        addComponent();
-        showTeacherData();
-        showStudentDetail();
         setMenu();
         setMenuDesign();
         setMenuLogic();
         frame.setJMenuBar(menu);
+        addComponent();
+        showTeacherData();
+        showStudentDetail();
+
     }
 
     void setDimensions() {
@@ -109,10 +117,7 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         SNameField = new JTextField();
         SNameField.setBounds(150, 260, 250, 50);
         SNameField.setFont(customFont);
-
-        isCompleteBox = new JCheckBox("Completed");
-        isCompleteBox.setBounds(500, 260, 100, 50);
-        isCompleteBox.setFont(customFont);
+        SNameField.setEditable(false);
 
         reg = new JLabel("Reg. No. :-");
         reg.setBounds(30, 320, 100, 50);
@@ -121,35 +126,19 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         RegField = new JTextField();
         RegField.setBounds(150, 320, 250, 50);
         RegField.setFont(customFont);
-
-        course = new JLabel("Course :-");
-        course.setBounds(30, 380, 150, 50);
-        course.setFont(customFont);
-
-        CourseField = new JTextField();
-        CourseField.setBounds(150, 380, 250, 50);
-        CourseField.setFont(customFont);
-
-        score = new JLabel("Score :-");
-        score.setBounds(30, 440, 100, 50);
-        score.setFont(customFont);
-
-        ScoreField = new JTextField();
-        ScoreField.setBounds(150, 440, 250, 50);
-        ScoreField.setFont(customFont);
+        RegField.setEditable(false);
 
         overview = new JLabel("Overview :-");
         overview.setBounds(750, 80, 200, 50);
         overview.setFont(new Font(null, Font.BOLD, 22));
 
-
         Update = new JButton("Update");
-        Update.setBounds(170, 550, 150, 50);
+        Update.setBounds(170, 620, 150, 50);
         Update.setFocusable(false);
         Update.addActionListener(this);
 
         Reset = new JButton("Reset");
-        Reset.setBounds(350, 550, 150, 50);
+        Reset.setBounds(350, 620, 150, 50);
         Reset.setFocusable(false);
         Reset.addActionListener(this);
 
@@ -159,7 +148,15 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         studentTable.setRowHeight(50);
         studentTable.getColumnModel().getColumn(0).setPreferredWidth(10);
         studentScrollPane = new JScrollPane(studentTable);
-        studentScrollPane.setBounds(750, 130, 600, 500);
+        studentScrollPane.setBounds(750, 130, 600, 550);
+
+        // dimension for editable table
+        editableTableModel = new DefaultTableModel(editableData, editableTableHeading);
+        editableTable = new JTable(editableTableModel);
+        editableTable.setRowHeight(40);
+        editableTable.getColumnModel().getColumn(0).setPreferredWidth(10);
+        editableScrollPane = new JScrollPane(editableTable);
+        editableScrollPane.setBounds(40, 390, 550, 200);
 
         frame.setSize(screenWidth, screenHeight);
         frame.setLocationRelativeTo(null);
@@ -178,10 +175,6 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         panel.add(TIdField);
         panel.add(SName);
         panel.add(SNameField);
-        panel.add(course);
-        panel.add(CourseField);
-        panel.add(score);
-        panel.add(ScoreField);
         panel.add(reg);
         panel.add(RegField);
         panel.add(search);
@@ -190,45 +183,9 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         panel.add(overview);
         panel.add(Update);
         panel.add(Reset);
-        panel.add(isCompleteBox);
         panel.add(studentScrollPane);
+        panel.add(editableScrollPane);
         frame.add(panel);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
-        // search button
-        if (e.getSource().equals("SearchBtn")) {
-            String searchKey = SearchField.getText();
-            if (searchKey.isEmpty()) {
-                System.out.println(searchKey);
-                JOptionPane.showMessageDialog(null, "Please Enter Student Registration Number !");
-            } else searchDetail(searchKey);
-        }
-
-        // reset button
-        if (e.getSource().equals("Reset")) {
-            resetData();
-        }
-
-        //        getting values
-        nameinp = SNameField.getText();
-        reginp = RegField.getText();
-        courseinp = CourseField.getText();
-        scoreinp = ScoreField.getText();
-        completeinp = (isCompleteBox.isSelected()) ? "True" : "False";
-
-        // checking for empty field
-        if (nameinp.isEmpty() || reginp.isEmpty() || courseinp.isEmpty() || scoreinp.isEmpty())
-            JOptionPane.showMessageDialog(null, "Please fill empty fields !");
-        else {
-            // update button
-            if (e.getSource().equals("Update")) {
-                updateData();
-            }
-        }
-
     }
 
     // show teacher detail
@@ -272,77 +229,83 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
             }
             studentData = AllStudentList.toArray(new Object[0][]);
             studentDataTableModel.setDataVector(studentData, studentHeading);
+            studentDataTableModel.fireTableDataChanged();
             connect.close();
         } catch (Exception err) {
             err.printStackTrace();
         }
     }
 
-    // function to search the detals of the student
-    void searchDetail(String searchKey) {
-        String query = "SELECT Score, Registration, Course, isComplete FROM studentscore  where Registration = ?";
-        String query0 = "SELECT Firstname, Lastname from studentregistration  where Registration = ?";
-        try {
-            Connection connect = DriverManager.getConnection(studentUrl, username, password);
-            Connection connect0 = DriverManager.getConnection(studentUrl, username, password);
-            PreparedStatement statement = connect.prepareStatement(query);
-            statement.setString(1, searchKey);
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource().equals(Reset)) resetData();
 
-            PreparedStatement statement0 = connect0.prepareStatement(query0);
-            statement0.setString(1, searchKey);
-            ResultSet resultSet = statement.executeQuery();
-            ResultSet resultSet0 = statement0.executeQuery();
-
-            while (resultSet.next()) // from student score
-            {
-                ScoreField.setText(resultSet.getString("Score"));
-                RegField.setText(resultSet.getString("Registration"));
-                CourseField.setText(resultSet.getString("Course"));
-                String isComplete = resultSet.getString("isComplete");
-                isCompleteBox.setSelected(isComplete.equals("True"));
-            }
-            while (resultSet0.next())        // from student registration
-            {
-                String firstname = resultSet0.getString("Firstname");
-                String lastname = resultSet0.getString("Lastname");
-                SNameField.setText(String.join(" ", firstname, lastname));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        // search field
+        if (e.getSource().equals(SearchBtn)) {
+            String searchKey = SearchField.getText();
+            if (searchKey.equals("6-2-32-176-"))
+                JOptionPane.showMessageDialog(null, "Please Enter the Complete Registration Number  of Student ! ");
+            else searchData(searchKey);
         }
     }
 
-    // function to reset data
+    // reset function
     void resetData() {
-        SearchBtn.setText("");
-        SNameField.setText("");
-        RegField.setText("");
-        ScoreField.setText("");
-        CourseField.setText("");
-        isCompleteBox.setSelected(false);
+        SearchField.setText(null);
+        SNameField.setText(null);
+        RegField.setText(null);
+        SearchField.setText("6-2-32-176-");
+        editableList.clear();
+        editableData = new Object[0][];
+        editableTableModel.setDataVector(editableData, editableTableHeading);
     }
 
-    //function to update data
-    void updateData() {
-        String query = "UPDATE studentscore SET Score=?, isComplete = ? WHERE Registration = ?";
-        try {
-            Connection connect = DriverManager.getConnection(studentUrl, username, password);
-            PreparedStatement statement = connect.prepareStatement(query);
-            statement.setString(1, scoreinp);
-            statement.setString(2, completeinp);
-            statement.setString(3, reginp);
-            int resultset = statement.executeUpdate();
-            if (resultset > 0) {
-                JOptionPane.showMessageDialog(null, "Data Updated Sucessfully");
-                resetData();
+    // void search field function
+    void searchData(String searchKey) {
+        boolean matched = false;
+        // retrieving the data of student
+        for (Object[] isMatchedData : AllStudentList) {
+            reginp = isMatchedData[0].toString();
+            nameinp = isMatchedData[1].toString();
+            if (reginp.equals(searchKey)) {
+                matched = true;
+                break;
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
+
+        if (matched) {
+            SNameField.setText(nameinp);
+            RegField.setText(searchKey);
+
+            // for other details
+            String query = "SELECT *from studentscore where Registration = ?";
+            try {
+                Connection connect = DriverManager.getConnection(studentUrl, username, password);
+                PreparedStatement statement = connect.prepareStatement(query);
+                statement.setString(1, searchKey);
+                ResultSet resultSet = statement.executeQuery();
+
+                while (resultSet.next()) {
+                    editableScore = resultSet.getString("Score");
+                    editableCourse = resultSet.getString("Course");
+                    editableRemarks = (resultSet.getString("isComplete").equalsIgnoreCase("True")) ? "COMPLETED" : "PENDING";
+
+                    // adding to arraylist
+                    editableList.add(new Object[]{editableCourse, editableScore, editableRemarks});
+                }
+                editableData = editableList.toArray(new Object[0][]);
+                editableTableModel.setDataVector(editableData, editableTableHeading);
+                editableTableModel.fireTableDataChanged();
+                connect.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } else JOptionPane.showMessageDialog(null, "Sorry ! The student is not Registered in College Database !");
     }
 
     public static void main(String[] args) {
 
         new TeacherDashboard("manoj@gmail.com");
     }
+
 }

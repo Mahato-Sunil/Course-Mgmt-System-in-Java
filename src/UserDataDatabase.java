@@ -103,6 +103,7 @@ class UserDataDatabase implements DatabaseCredentials {
             // Update table models with new data
             userData = userDataList.toArray(new Object[0][]);
             userDataTableModel.setDataVector(userData, userDataHeading);
+            userDataTableModel.fireTableDataChanged();
             CONNECT.close();
         } catch (Exception err) {
             System.out.println("Error : " + err);
