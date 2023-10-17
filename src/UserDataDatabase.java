@@ -33,13 +33,14 @@ class UserDataDatabase implements DatabaseCredentials {
     Font customFont = new Font(null, Font.PLAIN, 20);
 
     // Static block to initialize static fields
-   static {
+    static {
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
+
     void setDimension() {
         heading = new JLabel(user + " Database");
         heading.setBounds(420, 20, 200, 50);
@@ -67,27 +68,35 @@ class UserDataDatabase implements DatabaseCredentials {
     void populateTable() {
         String query = "SELECT * FROM teacherRegistration";
         String query1 = "SELECT * FROM studentregistration";
-        String QUERY = ("Teacher".equals(user)) ? query : query1;
+        String QUERY = ("Teacher".equalsIgnoreCase(user)) ? query : query1;
         try {
             connect = DriverManager.getConnection(teacherUrl, username, password); // teacher databse
             connect1 = DriverManager.getConnection(studentUrl, username, password); // student databse
-            CONNECT = ("Teacher".equals(user)) ? connect : connect1;
+            CONNECT = ("Teacher".equalsIgnoreCase(user)) ? connect : connect1;
             // from course table
             PreparedStatement statement = CONNECT.prepareStatement(QUERY);
             ResultSet resultSet = statement.executeQuery();
             // data from  course database
 
             while (resultSet.next()) {
-                if ("Teacher".equals(user)) {
+                if (user.equals("Teacher")) {
                     String teacherId = resultSet.getString("TeacherId");
                     String teacherName = resultSet.getString("FirstName") + resultSet.getString("LastName");
                     String teacherContact = resultSet.getString("Contact");
                     String teacherEmail = resultSet.getString("Email");
                     String teacherAddress = resultSet.getString("Address");
                     String teacherGender = resultSet.getString("Gender");
-                    String teacherCourse = resultSet.getString("Course");
 
-                    userDataList.add(new Object[]{teacherId, teacherName, teacherContact, teacherEmail, teacherAddress, teacherGender, teacherCourse}); // for all course list
+                    PreparedStatement statementC = connect.prepareStatement("SELECT Course FROM expertise where TeacherId = ?");
+                    statementC.setString(1, teacherId);
+                    ResultSet resultSetC = statementC.executeQuery();
+                    while (resultSetC.next()) {
+                        String teacherCourse = resultSetC.getString("Course");
+                        System.out.println(teacherCourse);
+                        userDataList.add(new Object[]{teacherId, teacherName, teacherContact, teacherEmail, teacherAddress, teacherGender, teacherCourse}); // for all teacher list
+                        System.out.println(userDataList);
+                    }
+
                 } else if (user.equals("Student")) {
                     String studentId = resultSet.getString("Registration");
                     String studentName = resultSet.getString("Firstname") + resultSet.getString("Lastname");
@@ -95,15 +104,24 @@ class UserDataDatabase implements DatabaseCredentials {
                     String studentEmail = resultSet.getString("Email");
                     String studentAddress = resultSet.getString("Address");
                     String studentGender = resultSet.getString("Gender");
-                    String studentCourse = resultSet.getString("Course");
 
-                    userDataList.add(new Object[]{studentId, studentName, studentContact, studentEmail, studentAddress, studentCourse, studentGender}); // for all course list
+                    PreparedStatement statementC = connect1.prepareStatement("SELECT Course FROM studentscore where Registration = ?");
+                    statementC.setString(1, studentId);
+                    ResultSet resultSetC = statementC.executeQuery();
+                    while (resultSetC.next()) {
+                        String studentCourse = resultSetC.getString("Course");
+                        userDataList.add(new Object[]{studentId, studentName, studentContact, studentEmail, studentAddress, studentCourse, studentGender}); // for all student list
+                    }
                 }
+                else
+                    System.out.println("error");
             }
             // Update table models with new data
             userData = userDataList.toArray(new Object[0][]);
             userDataTableModel.setDataVector(userData, userDataHeading);
             userDataTableModel.fireTableDataChanged();
+            connect.close();
+            connect1.close();
             CONNECT.close();
         } catch (Exception err) {
             System.out.println("Error : " + err);

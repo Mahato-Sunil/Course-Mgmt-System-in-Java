@@ -297,7 +297,6 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
 
             } else getEnrolled(enrollKey);
         }
-
     }
 
     // method to show the course details in the table
@@ -320,11 +319,9 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
             // Update table models with new data
             enrollCourseData = AllEnrollCourseList.toArray(new Object[0][]);
             eCourseTableModel.setDataVector(enrollCourseData, enrolledCourse);
-            eCourseTableModel.fireTableDataChanged();
-            connect.close();
+                       connect.close();
         } catch (Exception err) {
-            System.out.println("Error : " + err);
-            err.printStackTrace();
+                       err.printStackTrace();
         }
     }
 
@@ -411,6 +408,10 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
                 int rowsInserted = statement.executeUpdate();
                 if (rowsInserted > 0) {
                     JOptionPane.showMessageDialog(null, " Welcome to the new Course ! \n Have fun  exploring ");
+
+                    AllEnrollCourseList.clear();
+                    enrollCourseData = new Object[0][];
+                    eCourseTableModel.setDataVector(enrollCourseData, enrolledCourse);
                     showEnrolledCourseData();
                 }
                 connect.close();

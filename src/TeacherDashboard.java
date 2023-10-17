@@ -1,6 +1,5 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,18 +7,18 @@ import java.sql.*;
 import java.util.ArrayList;
 
 class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCredentials {
-    // initializing the global variables
+    // Declare JFrame and other components
     JFrame frame = new JFrame("Teacher DashBoard");
     JPanel panel;
     JLabel heading, TName, TId, search, SName, reg, overview;
     JTextField TNameField, TIdField, SearchField, SNameField, RegField;
     JButton SearchBtn, Update, Reset;
 
-    String nameinp, reginp;   // to store the details of the searched student
-    // Define custom cell editor for the editable columns
-    TableCellEditor editableCellEditor, remarksCellEditor;
-     JComboBox<String> remarksComboBox;
-    JTable editableTable; //  editable table to show the detail of searched student
+    // Variables to store student name and registration number
+    String nameinp, reginp;
+
+    // Components for an editable table displaying course scores and remarks
+    JTable editableTable;
     DefaultTableModel editableTableModel;
     String[] editableTableHeading = {"Course", "Score", "Remarks"};
     String editableCourse, editableScore, editableRemarks;
@@ -27,26 +26,26 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
     Object[][] editableData;
     JScrollPane editableScrollPane;
 
-    // default object for  showing studnet  table
+    String editedScore, editedRemark;
+
+    // Components for a table displaying student details
     JTable studentTable;
     DefaultTableModel studentDataTableModel;
-    String[] studentHeading = {"Registration No. ", "Student's Name", "Contact", "Address"};  // for showing availabel student heading
+    String[] studentHeading = {"Registration No. ", "Student's Name", "Contact", "Address"};
     String regNo, studentName, studentContact, studentAddress;
     ArrayList<Object[]> AllStudentList = new ArrayList<>();
     Object[][] studentData;
     JScrollPane studentScrollPane;
 
-    // getting the whole sizez of the page
+    // Get the screen size and set some dimensions
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     int screenWidth = (int) screenSize.getWidth();
     int screenHeight = (int) screenSize.getHeight();
 
-    //    font for the overall text
     Font customFont = new Font(null, Font.PLAIN, 18);
+    String teacherEmail;
 
-    String teacherEmail;    // retrieved from the login page
-
-    // Static block to initialize static fields
+    // Static block for loading the JDBC driver
     static {
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
@@ -55,8 +54,8 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         }
     }
 
-    TeacherDashboard(String id) { // id refers to the email
-        this.teacherEmail = id;  // passing the value
+    TeacherDashboard(String id) {
+        this.teacherEmail = id;
         setDimensions();
         setMenu();
         setMenuDesign();
@@ -65,87 +64,99 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         addComponent();
         showTeacherData();
         showStudentDetail();
-
     }
 
     void setDimensions() {
         panel = new JPanel();
+        // Set panel size, layout, and background color
         panel.setSize(1450, 750);
         panel.setLayout(null);
         panel.setBackground(Color.getHSBColor(180, 6, 100));
         panel.setLocation(40, 10);
 
-        // setting the dimension of the actual components
         heading = new JLabel("Teacher Dashboard");
+        // Set heading label properties
         heading.setBounds(30, 10, 300, 50);
         heading.setFont(new Font(null, Font.BOLD, 30));
         heading.setForeground(Color.BLUE);
 
         TName = new JLabel("Name : ");
+        // Set label for teacher name
         TName.setBounds(450, 15, 100, 50);
         TName.setFont(customFont);
 
         TNameField = new JTextField();
+        // Set text field for teacher name
         TNameField.setBounds(580, 15, 250, 50);
         TNameField.setEditable(false);
         TNameField.setFont(customFont);
 
         TId = new JLabel("Teacher ID :");
+        // Set label for teacher ID
         TId.setBounds(1000, 15, 200, 50);
         TId.setFont(customFont);
 
         TIdField = new JTextField();
+        // Set text field for teacher ID
         TIdField.setBounds(1150, 15, 250, 50);
         TIdField.setEditable(false);
         TIdField.setFont(customFont);
 
         search = new JLabel("Search Student Details :-");
+        // Set label for searching student details
         search.setBounds(30, 80, 250, 50);
         search.setFont(new Font(null, Font.BOLD, 20));
 
         SearchField = new JTextField("6-2-32-176-");
+        // Set text field for entering the student registration number
         SearchField.setBounds(30, 140, 250, 50);
         SearchField.setFont(customFont);
 
         SearchBtn = new JButton("Search ");
+        // Set search button
         SearchBtn.setBounds(30, 200, 150, 50);
         SearchBtn.setFocusable(false);
         SearchBtn.addActionListener(this);
 
-        // student details
         SName = new JLabel("Name :-");
+        // Set label for displaying student name
         SName.setBounds(30, 260, 100, 50);
         SName.setFont(customFont);
 
         SNameField = new JTextField();
+        // Set text field for displaying student name
         SNameField.setBounds(150, 260, 250, 50);
         SNameField.setFont(customFont);
         SNameField.setEditable(false);
 
         reg = new JLabel("Reg. No. :-");
+        // Set label for displaying student registration number
         reg.setBounds(30, 320, 100, 50);
         reg.setFont(customFont);
 
         RegField = new JTextField();
+        // Set text field for displaying student registration number
         RegField.setBounds(150, 320, 250, 50);
         RegField.setFont(customFont);
         RegField.setEditable(false);
 
         overview = new JLabel("Overview :-");
+        // Set label for overview
         overview.setBounds(750, 80, 200, 50);
         overview.setFont(new Font(null, Font.BOLD, 22));
 
         Update = new JButton("Update");
+        // Set update button
         Update.setBounds(170, 620, 150, 50);
         Update.setFocusable(false);
         Update.addActionListener(this);
 
         Reset = new JButton("Reset");
+        // Set reset button
         Reset.setBounds(350, 620, 150, 50);
         Reset.setFocusable(false);
         Reset.addActionListener(this);
 
-        // dimension for table
         studentDataTableModel = new DefaultTableModel(studentData, studentHeading);
         studentTable = new JTable(studentDataTableModel);
         studentTable.setRowHeight(50);
@@ -153,27 +164,12 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         studentScrollPane = new JScrollPane(studentTable);
         studentScrollPane.setBounds(750, 130, 600, 550);
 
-        // dimension for editable table
         editableTableModel = new DefaultTableModel(editableData, editableTableHeading);
         editableTable = new JTable(editableTableModel);
         editableTable.setRowHeight(40);
         editableTable.getColumnModel().getColumn(0).setPreferredWidth(10);
         editableScrollPane = new JScrollPane(editableTable);
         editableScrollPane.setBounds(40, 390, 550, 200);
-
-        // Create a DefaultCellEditor for text fields (editable columns)
-        editableCellEditor = new DefaultCellEditor(new JTextField());
-        // Create a JComboBox with options
-        String[] remarksOptions = {"COMPLETED", "PENDING"};
-        remarksComboBox = new JComboBox<>(remarksOptions);
-
-        // Create a custom cell editor for JComboBox
-        remarksCellEditor = new DefaultCellEditor(remarksComboBox);
-
-        // Set custom cell editor for "Remarks" column
-
-        // Set custom cell editor for "Score" and "Remarks" columns
-        editableTable.getColumnModel().getColumn(1).setCellEditor(editableCellEditor);        editableTable.getColumnModel().getColumn(2).setCellEditor(remarksCellEditor);
 
         frame.setSize(screenWidth, screenHeight);
         frame.setLocationRelativeTo(null);
@@ -183,8 +179,8 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         frame.setVisible(true);
     }
 
-    // adding the components
     void addComponent() {
+        // Add components to the panel and the panel to the frame
         panel.add(heading);
         panel.add(TName);
         panel.add(TNameField);
@@ -205,8 +201,8 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         frame.add(panel);
     }
 
-    // show teacher detail
     void showTeacherData() {
+        // Retrieve and display teacher data
         String query = "SELECT FirstName, LastName, TeacherId FROM teacherRegistration where Email = ?";
         try {
             Connection connect = DriverManager.getConnection(teacherUrl, username, password);
@@ -226,14 +222,14 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         }
     }
 
-    //    show student details in the table
     void showStudentDetail() {
+        // Retrieve and display student details
         String query = "SELECT *FROM studentregistration";
         try {
-            Connection connect = DriverManager.getConnection(studentUrl, username, password); // course databse
+            Connection connect = DriverManager.getConnection(studentUrl, username, password);
             PreparedStatement statement = connect.prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
-            // from course table
+
             while (resultSet.next()) {
                 String firstname = resultSet.getString("Firstname");
                 String lastname = resultSet.getString("Lastname");
@@ -242,7 +238,7 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
                 studentContact = resultSet.getString("Contact");
                 studentAddress = resultSet.getString("Address");
 
-                AllStudentList.add(new Object[]{regNo, studentName, studentContact, studentAddress});   //for all student list
+                AllStudentList.add(new Object[]{regNo, studentName, studentContact, studentAddress});
             }
             studentData = AllStudentList.toArray(new Object[0][]);
             studentDataTableModel.setDataVector(studentData, studentHeading);
@@ -255,19 +251,23 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        // Handle button actions
         if (e.getSource().equals(Reset)) resetData();
-
-        // search field
         if (e.getSource().equals(SearchBtn)) {
             String searchKey = SearchField.getText();
             if (searchKey.equals("6-2-32-176-"))
-                JOptionPane.showMessageDialog(null, "Please Enter the Complete Registration Number  of Student ! ");
+                JOptionPane.showMessageDialog(null, "Please Enter the Complete Registration Number of Student!");
             else searchData(searchKey);
+        }
+        if (e.getSource().equals(Update)) {
+            String searchKey = RegField.getText();
+            if (searchKey.isEmpty()) JOptionPane.showMessageDialog(null, "Student Is not Selected !");
+            else updateData(searchKey);
         }
     }
 
-    // reset function
     void resetData() {
+        // Reset input fields and editable data
         SearchField.setText(null);
         SNameField.setText(null);
         RegField.setText(null);
@@ -277,10 +277,9 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         editableTableModel.setDataVector(editableData, editableTableHeading);
     }
 
-    // void search field function
     void searchData(String searchKey) {
+        // Search for a student and display their details
         boolean matched = false;
-        // retrieving the data of student
         for (Object[] isMatchedData : AllStudentList) {
             reginp = isMatchedData[0].toString();
             nameinp = isMatchedData[1].toString();
@@ -293,62 +292,116 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
         if (matched) {
             SNameField.setText(nameinp);
             RegField.setText(searchKey);
+            showSearchedStudent(searchKey);
+        } else {
+            JOptionPane.showMessageDialog(null, "Sorry! The student is not Registered in the College Database!");
+        }
+    }
 
-            // for other details
-            String query = "SELECT *from studentscore where Registration = ?";
+    void updateData(String searchKey) {
+//        getting the value of selected row
+        int selectedRow = editableTable.getSelectedRow();
+        if (selectedRow != -1) {
+            // Check if a row is selected (selectedRow will be -1 if no row is selected)
+            Object courseColumn = editableTable.getValueAt(selectedRow, 0);
+            Object scoreColumn = editableTable.getValueAt(selectedRow, 1);
+            Object remarksColumn = editableTable.getValueAt(selectedRow, 2);
+            editPanel(courseColumn.toString(), scoreColumn.toString(), remarksColumn.toString(), searchKey);   // passing the value to method
+        } else {
+            // Handle the case where no row is selected
+            JOptionPane.showMessageDialog(null, "Please select a data first.");
+        }
+    }
+
+    // panel to show the input dialog box
+    void editPanel(String courseColumn, String scoreColumn, String remarksColumn, String searchKey) {
+
+        JComboBox<String> remarks;
+        String[] option = {"COMPLETED", "PENDING"};
+        remarks = new JComboBox<>(option);
+        if (remarksColumn.equalsIgnoreCase("COMPLETED")) remarks.setSelectedItem(option[0]);
+        else remarks.setSelectedItem(option[1]);
+
+        JTextField score = new JTextField(scoreColumn, 20);
+
+        // show panel
+        JPanel editPanel = new JPanel();
+        editPanel.setLayout(new GridLayout(0, 1));
+        editPanel.add(new JLabel("Course : " + courseColumn));
+        editPanel.add(new JLabel("\n"));
+        editPanel.add(new JLabel("Score : "));
+        editPanel.add(score);
+        editPanel.add(new JLabel("\n"));
+        editPanel.add(new JLabel("\nRemarks : \n"));
+        editPanel.add(remarks);
+        editPanel.add(new JLabel("\n"));
+
+        // handle the operation
+        int result = JOptionPane.showConfirmDialog(null, editPanel, "Updata Data", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result == JOptionPane.OK_OPTION) {
+            // User clicked OK
+            // Retrieve data from the JComboBox components in your custom panel
+            editedScore = score.getText();
+            editedRemark = (String) remarks.getSelectedItem();
+            String insertRemark = (editedRemark.equals("COMPLETED")) ? "True" : "False";
+
+            // storing the data to database
+            String query = "UPDATE studentscore SET Score =?, isComplete = ? where Registration = ?";
+
             try {
                 Connection connect = DriverManager.getConnection(studentUrl, username, password);
                 PreparedStatement statement = connect.prepareStatement(query);
-                statement.setString(1, searchKey);
-                ResultSet resultSet = statement.executeQuery();
+                statement.setString(1, editedScore);
+                statement.setString(2, insertRemark);
+                statement.setString(3, searchKey);
 
-                while (resultSet.next()) {
-                    editableScore = resultSet.getString("Score");
-                    editableCourse = resultSet.getString("Course");
-                    editableRemarks = (resultSet.getString("isComplete").equalsIgnoreCase("True")) ? "COMPLETED" : "PENDING";
-
-                    // adding to arraylist
-                    editableList.add(new Object[]{editableCourse, editableScore, editableRemarks});
+                int rowUpdated = statement.executeUpdate();
+                if (rowUpdated > 0) {
+                    JOptionPane.showMessageDialog(null, "Data Update Successful");
+                    AllStudentList.clear();
+                    studentData = new Object[0][];
+                    studentDataTableModel.setDataVector(studentData, studentHeading);
+                    showStudentDetail();
+                    editableList.clear();
+                    editableData = new Object[0][];
+                    editableTableModel.setDataVector(editableData, editableTableHeading);
+                    showSearchedStudent(searchKey);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Sorry, Couldn't Update Data");
                 }
-                editableData = editableList.toArray(new Object[0][]);
-                editableTableModel.setDataVector(editableData, editableTableHeading);
-                editableTableModel.fireTableDataChanged();
                 connect.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        } else JOptionPane.showMessageDialog(null, "Sorry ! The student is not Registered in College Database !");
+            System.out.println(editedRemark);
+            System.out.println(editedScore);
+        } else {
+            // User clicked Cancel or closed the dialog
+        }
     }
 
-    // function to update the details of student
-    void updateData(String searchKey) {
-        String editedScore = (String) editableTable.getValueAt(0, 1);
-        String editedRemark = (String) editableTable.getValueAt(0, 2);
-
-        String query = "UPDATE studentscore SET Score =?, isComplete = ?  where Registration = ?";
+    // showing the searched student data
+    void showSearchedStudent(String searchKey) {
+        String query = "SELECT * from studentscore where Registration = ?";
         try {
             Connection connect = DriverManager.getConnection(studentUrl, username, password);
             PreparedStatement statement = connect.prepareStatement(query);
-            statement.setString(1, editedScore);
-            statement.setString(2, editedRemark);
-            statement.setString(3, searchKey);
+            statement.setString(1, searchKey);
+            ResultSet resultSet = statement.executeQuery();
 
-            int rowUpdated = statement.executeUpdate();
-            if (rowUpdated > 0) {
-                JOptionPane.showMessageDialog(null, "Data Update Successfull");
-                AllStudentList.clear();
-                studentData = new Object[0][];
-                studentDataTableModel.setDataVector(studentData, studentHeading);
-            } else {
-                JOptionPane.showMessageDialog(null, "Sorry Couldn't Update Data");
+            while (resultSet.next()) {
+                editableScore = resultSet.getString("Score");
+                editableCourse = resultSet.getString("Course");
+                editableRemarks = (resultSet.getString("isComplete").equalsIgnoreCase("True")) ? "COMPLETED" : "PENDING";
+
+                editableList.add(new Object[]{editableCourse, editableScore, editableRemarks});
             }
+            editableData = editableList.toArray(new Object[0][]);
+            editableTableModel.setDataVector(editableData, editableTableHeading);
+            editableTableModel.fireTableDataChanged();
             connect.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main(String[] args) {
-        new TeacherDashboard("manoj@gmail.com");
     }
 }

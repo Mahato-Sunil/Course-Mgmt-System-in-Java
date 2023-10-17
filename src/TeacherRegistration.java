@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TeacherRegistration extends StudentRegistration implements DatabaseCredentials, ActionListener, ListSelectionListener {
@@ -139,7 +140,8 @@ public class TeacherRegistration extends StudentRegistration implements Database
             for (String course : selectedCourses) {
                 expertiseStatement.setString(1, teacherID);
                 expertiseStatement.setString(2, course);
-                expertiseStatement.executeUpdate();
+                int i = expertiseStatement.executeUpdate();
+                System.out.println(i);
             }
             expertiseStatement.close();
             connect.close();
@@ -147,9 +149,14 @@ public class TeacherRegistration extends StudentRegistration implements Database
             e.printStackTrace();
         }
     }
+
     @Override
     public void valueChanged(ListSelectionEvent e) {
-        // Handle selection change here
-        selectedCourses = expertiseList.getSelectedValuesList();
+        if (!e.getValueIsAdjusting()) {  // This check ensures the event is not fired twice
+            selectedCourses = expertiseList.getSelectedValuesList();
+            if (selectedCourses == null)
+                selectedCourses = new ArrayList<>();  // Initialize it to an empty list if nothing is selected
+            System.out.println(selectedCourses);
+        }
     }
 }

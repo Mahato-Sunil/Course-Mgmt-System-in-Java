@@ -23,6 +23,7 @@ public class StudentRegistration extends MouseAdapter implements ActionListener,
     //  string for the courses -> combo box
     String COURSE, COURSEID;
     ArrayList<String> courseList = new ArrayList<>();
+    ArrayList<Object[]> tempCourseList = new ArrayList<>();
     String[] courseDropDown;
 
     // getting the whole sizez of the page
@@ -196,7 +197,8 @@ public class StudentRegistration extends MouseAdapter implements ActionListener,
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(register)) studentDatabase();
-    }// method to store the student details in database
+    }
+    // method to store the student details in database
 
     public void studentDatabase() {
         // getting and storing all the details of student in string variable
@@ -218,8 +220,20 @@ public class StudentRegistration extends MouseAdapter implements ActionListener,
     }
 
     public void storeStudentDatabase(String ufname, String ulname, String uregno, String ucontact, String uemail, String uaddress, String ugender, String ucourse) {
-        String query0 = "INSERT INTO studentscore(Course_Id, Registration, Course, isComplete) Values (?,?,?,?)";
+        String query0 = "INSERT INTO studentscore(Course_Id, Registration, Score, Course, isComplete) Values (?,?,?,?,?)";
         String query = "INSERT INTO studentregistration (Firstname, Lastname, Registration, Contact, Email, Address, Gender) VALUES (?,?,?,?,?,?,?)";
+
+        String matchedId = null;
+        // retireving the course data
+        for (Object[] temp : tempCourseList) {
+            String tempCourse = temp[0].toString();
+            String tempId = temp[1].toString();
+            if (tempCourse.equals(ucourse)) {
+                matchedId = tempId;
+                break;
+            }
+        }
+
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 
@@ -236,10 +250,11 @@ public class StudentRegistration extends MouseAdapter implements ActionListener,
             statement.setString(7, ugender);
 
             PreparedStatement statement1 = connect0.prepareStatement(query0);
-            statement1.setString(1, COURSEID);
+            statement1.setString(1, matchedId);
             statement1.setString(2, uregno);
-            statement1.setString(3, ucourse);
-            statement1.setString(4, "TRUE");
+            statement1.setString(3, "0.0");
+            statement1.setString(4, ucourse);
+            statement1.setString(5, "FALSE");
 
             int rowsInserted = statement.executeUpdate();
             int rowsInserted0 = statement1.executeUpdate();
@@ -272,15 +287,15 @@ public class StudentRegistration extends MouseAdapter implements ActionListener,
                 COURSE = resultSet.getString("Course");
                 COURSEID = resultSet.getString("Id");
                 courseList.add(COURSE);
+                tempCourseList.add(new Object[]{COURSE, COURSEID});
             }
-
             courseDropDown = courseList.toArray(new String[0]);
             courselist.setModel(new DefaultComboBoxModel<>(courseDropDown));
 
             connect.close();
         } catch (ClassNotFoundException | SQLException err) {
             // Handle the exception and show an error message to the user
-            message.setText("Server Error ! Failed to Establish Connection. ");
+            err.printStackTrace();
         }
     }
 }
