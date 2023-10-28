@@ -59,7 +59,7 @@ public class LoadingPage {
                         timer.stop();
                         Timer pauseTimer = new Timer(300, ev -> {
                             frame.dispose();
-                            SwingUtilities.invokeLater(HomePage::new);
+                            SwingUtilities.invokeLater(Home::new);
                         });
                         pauseTimer.setRepeats(false);
                         pauseTimer.start();
