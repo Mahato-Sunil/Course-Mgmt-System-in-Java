@@ -14,6 +14,9 @@ public class Home implements ActionListener {
     }
 
     void initComponents() {
+        JLabel heading = new JLabel("WELCOME TO THE SYSTEM ");
+        heading.setBounds(150, 20, 450, 50);
+        heading.setFont(new Font(null, Font.BOLD, 23));
         frame = new JFrame("Course Management System");
         frame.setSize(720, 480);
         frame.getContentPane().setBackground(new Color(169, 170, 171));
@@ -40,6 +43,7 @@ public class Home implements ActionListener {
         exit = createButton(null, "Image/exit.png", 150, 150);
         exit.addActionListener(this);
 
+        frame.add(heading);
         panel.add(login);
         panel.add(about);
         panel.add(exit);
