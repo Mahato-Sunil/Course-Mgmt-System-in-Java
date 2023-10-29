@@ -120,7 +120,7 @@ public class PasswordStorage implements ActionListener {
             if (rowsInserted > 0) {
                 frame.setVisible(false);
                 JOptionPane.showMessageDialog(null, "Congratulations ! You have been registered. \n Redirecting to Login Page.... ");
-                new HomePage();
+                new LoginPage();
             }
             connect.close();
         } catch (Exception err) {

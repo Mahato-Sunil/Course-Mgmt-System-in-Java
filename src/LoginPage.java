@@ -3,69 +3,28 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class HomePage implements ActionListener {
-    // instantiating a components
-    JFrame frame = new JFrame("Course Management");       // for frame
-    JMenuBar menu;  // for top menu
-    JMenu home, option, registerMenu;     // contents of menu
-    JMenuItem courseMenu, exitPg;  // menu item for option menu
-    JMenuItem TeachReg, StudentReg;     // menu item for Register menu
+public class LoginPage implements ActionListener {
 
+    // instantiating a components
+    JFrame frame = new JFrame("Login");       // for frame
     // for main contains
     JPanel panel;
-    JLabel heading, userIdLabel, userPwdLabel, message, userModeLabel;
+    JLabel  userIdLabel, userPwdLabel, message, userModeLabel;
     JComboBox userMode;
     JTextField userIdInp;
     JPasswordField userPwdInp;
     JButton submit;
 
     // main constructor class
-    HomePage() {
+    LoginPage() {
         setDimensions();
         addComp();
-        Menu();
-    }
-
-    // function to show the menu items
-    private void Menu() {
-        menu = new JMenuBar();
-
-        home = new JMenu("Home");
-        option = new JMenu("Option ");
-        registerMenu = new JMenu("Register");
-
-        TeachReg = new JMenuItem("Teacher Registration");
-        TeachReg.addActionListener(this);
-
-        StudentReg = new JMenuItem("Student Registration");
-        StudentReg.addActionListener(this);
-
-        // registerMenu.addActionListener(this);
-
-        exitPg = new JMenuItem("Exit");
-        exitPg.addActionListener(this);
-
-        courseMenu = new JMenuItem("Courses ");
-        courseMenu.addActionListener(this);
-
-        // adding the files menu
-        option.add(registerMenu);
-        option.add(courseMenu);
-        option.add(exitPg);
-
-        registerMenu.add(StudentReg);
-        registerMenu.add(TeachReg);
-
-        menu.add(home);     // adding the menu
-        menu.add(option);   // adding menu items
-        frame.setJMenuBar(menu);
     }
 
     // adding the components
     private void addComp() {
         panel.add(userModeLabel);   // for user mode label
         panel.add(userMode);        // for jcombo box
-        panel.add(heading);         // heading
         panel.add(userIdLabel);     // username label
         panel.add(userPwdLabel);    // password label
         panel.add(message);         // message label
@@ -86,16 +45,11 @@ public class HomePage implements ActionListener {
         panel.setBackground(Color.getHSBColor(180, 6, 100));
         panel.setLocation(30, 10);
 
-        heading = new JLabel("Welcome to Course Management System");
-        heading.setBounds(125, 10, 500, 50);
-        heading.setFont(new Font(null, Font.ITALIC, 25));
-        heading.setForeground(Color.blue);
-
-        userModeLabel = new JLabel("User Mode :-");
-        userModeLabel.setBounds(120, 100, 100, 50);
+        userModeLabel = new JLabel("Select your Role :-");
+        userModeLabel.setBounds(120, 100, 150, 50);
 
         userMode = new JComboBox(mode);
-        userMode.setBounds(200, 100, 150, 50);
+        userMode.setBounds(250, 100, 150, 50);
 
         userIdLabel = new JLabel("Username or Email :- ");
         userIdLabel.setBounds(120, 160, 180, 50); // username
@@ -122,31 +76,12 @@ public class HomePage implements ActionListener {
         frame.setSize(720, 540);
         frame.setLocationRelativeTo(null);
         frame.setLayout(null);
-        frame.setResizable(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setResizable(false);
     }
 
     // adding the action listener
     @Override
     public void actionPerformed(ActionEvent e) {
-        // menu -> register
-        if (e.getSource() == StudentReg) {
-            new StudentRegistration();
-            frame.setVisible(false);
-        }
-
-        if (e.getSource() == TeachReg) {
-            new TeacherRegistration();
-            frame.setVisible(false);
-        }
-        if (e.getSource() == courseMenu) {
-            new CourseDashboard();
-            frame.setVisible(false);
-        }
-
-        // menu ->exit
-        if (e.getSource() == exitPg) System.exit(0);
-
         // login button
         if (e.getSource() == submit) {
             String usermode = (String) userMode.getSelectedItem();

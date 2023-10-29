@@ -58,8 +58,8 @@ public class publicMenu {
     }
 
     static void setMenuLogic() {
-        homeMenu.addActionListener(e -> new HomePage());
-        loginPageMenu.addActionListener(e -> new HomePage());
+        homeMenu.addActionListener(e -> new LoginPage());
+        loginPageMenu.addActionListener(e -> new LoginPage());
         adminPageMenu.addActionListener(e -> new AdminDashboard());
         exitMenu.addActionListener(e -> System.exit(0));
         studentDataMenu.addActionListener(e -> new UserDataDatabase("Student"));
