@@ -1,11 +1,12 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
-public class publicMenu {
+public class PublicMenu extends JFrame {
     // for menu
     static JMenuBar menu;
     static JMenu homeMenu, viewMenu, aboutMenu;
-    static JMenuItem loginPageMenu, adminPageMenu, studentDataMenu, teacherDataMenu, aboutMenuItem, settingMenu, aboutDeveloper, exitMenu;
+    static JMenuItem home, loginPageMenu, adminPageMenu, studentDataMenu, teacherDataMenu, aboutMenuItem, settingMenu, aboutDeveloper, exitMenu;
     static Font menuFont = new Font(null, Font.PLAIN, 16);
 
     static void setMenu()      // for menu items
@@ -16,10 +17,12 @@ public class publicMenu {
         viewMenu = new JMenu("View");
         aboutMenu = new JMenu("About");
 
+        home = new JMenuItem("Home");
         loginPageMenu = new JMenuItem("Login");
         adminPageMenu = new JMenuItem("Admin");
         exitMenu = new JMenuItem("Exit");
 
+        homeMenu.add(home);
         homeMenu.add(loginPageMenu);
         homeMenu.add(adminPageMenu);
         homeMenu.add(exitMenu);
@@ -44,6 +47,7 @@ public class publicMenu {
     }
 
     static void setMenuDesign() {
+        home.setFont(menuFont);
         homeMenu.setFont(menuFont);
         aboutMenu.setFont(menuFont);
         viewMenu.setFont(menuFont);
@@ -57,9 +61,26 @@ public class publicMenu {
         loginPageMenu.setFont(menuFont);
     }
 
+    static void disposeFrame() {
+        Frame[] allFrames = Frame.getFrames();  // Get all frames to an array
+        for (Frame frame : allFrames) { // Iterate through the allFrames array
+            if (frame.isVisible()) {            // Check if frame is visible
+                frame.dispose();
+            }
+        }
+    }
+
     static void setMenuLogic() {
-        homeMenu.addActionListener(e -> new LoginPage());
-        loginPageMenu.addActionListener(e -> new LoginPage());
+        home.addActionListener(e -> {
+            disposeFrame();
+            SwingUtilities.invokeLater(Home::new);
+        });
+
+        loginPageMenu.addActionListener(e -> {
+            disposeFrame();
+            SwingUtilities.invokeLater(LoginPage::new);
+        });
+
         adminPageMenu.addActionListener(e -> new AdminDashboard());
         exitMenu.addActionListener(e -> System.exit(0));
         studentDataMenu.addActionListener(e -> new UserDataDatabase("Student"));
@@ -67,7 +88,6 @@ public class publicMenu {
         aboutDeveloper.addActionListener(e -> JOptionPane.showMessageDialog(null, " Developer Name = Sunil Mahato \n Education : BCA 4th Sem \n Contact : +977-9860650642 \n Email : sunilmaht642@gmail.com"));
         aboutMenuItem.addActionListener(e -> JOptionPane.showMessageDialog(null, "We are BCA Students! This is 3rd Sem College Project "));
         settingMenu.addActionListener(e -> JOptionPane.showMessageDialog(null, "The setting is currently unavailable "));
-
     }
 }
 
@@ -75,7 +95,7 @@ public class publicMenu {
 
 setMenu();                  // menu dimensions
 setMenuDesign();            //menu design
-setMenuLogic                // menu logic
+setMenuLogic()                // menu logic
 frame.setJMenuBar(menu);    // to show the menu frame
 */
 

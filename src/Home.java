@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class Home implements ActionListener {
+public class Home extends CreateImageButton implements ActionListener {
     // initialize the components
     JFrame frame = new JFrame("Course Management System");
     JPanel panel1, panel2, panel3, panel4, panel5;
@@ -41,9 +41,6 @@ public class Home implements ActionListener {
         exit = createButton(null, "Image/exit.png", 125, 125);
         exit.addActionListener(this);
 
-        register = createButton(null, "Image/register.png", 125, 125);
-        register.addActionListener(this);
-
         // right panel
         panel3 = new JPanel();
         panel3.setPreferredSize(new Dimension(250, 630)); // Use setPreferredSize
@@ -73,10 +70,8 @@ public class Home implements ActionListener {
         panel1.add(header);
 
         panel2.add(login);
-        panel2.add(register);
+        panel2.add(about);
         panel2.add(exit);
-
-        panel3.add(about);
 
         panel4.add(footer);
 
@@ -88,38 +83,10 @@ public class Home implements ActionListener {
         frame.add(panel4, BorderLayout.SOUTH);
         frame.add(panel5, BorderLayout.CENTER);
     }
-
-    // code for button
-    JButton createButton(String buttonText, String imagePath, int width, int height) {
-        ImageIcon icon = new ImageIcon(imagePath);
-        // Scale the image to fit the specified dimensions
-        Image img = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        ImageIcon scaledIcon = new ImageIcon(img);
-
-        JButton button = new JButton(buttonText, scaledIcon);
-        button.setHorizontalTextPosition(SwingConstants.CENTER);
-
-        // Set the preferred size of the button
-        button.setPreferredSize(new Dimension(width + 50, height + 50));
-
-        // Remove button border
-        button.setBorderPainted(false);
-        button.setFocusPainted(true);
-        button.setContentAreaFilled(false);
-        return button;
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(Home::new);
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == login) {
-                                  SwingUtilities.invokeLater(LoginPage::new);
-
-        } else if (e.getSource() == register) {
-                SwingUtilities.invokeLater(RegistrationPage::new);
+            SwingUtilities.invokeLater(LoginPage::new);
         } else if (e.getSource() == about)
             JOptionPane.showMessageDialog(null, "Developer : Sunil Mahato \n Completed Year : 2023 \n Email : sunilmaht642@gmail.com \n Website : mahatosunil.com.np");
         else if (e.getSource() == exit) System.exit(0);

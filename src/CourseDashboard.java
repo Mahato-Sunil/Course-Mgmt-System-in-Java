@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class CourseDashboard extends publicMenu implements ActionListener, DatabaseCredentials {
+public class CourseDashboard extends PublicMenu implements ActionListener, DatabaseCredentials {
     // instantiating the componenets
     JFrame frame = new JFrame("Course Dashboard");
     JPanel panel;

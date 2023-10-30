@@ -24,7 +24,7 @@ class UserDataDatabase implements DatabaseCredentials {
     JTable userDataTable;
     DefaultTableModel userDataTableModel;
     String[] teacherDataHeading = {"Teacher ID ", "Teacher's Name", "Contact", "Email", "Address", "Expertise", "Gender"};  // for showing availabel student heading
-    String[] studentDataHeading = {"Registration No. ", "Student's Name", "Contact", "Email", "Address", "Gender", "Course"};  // for showing availabel student heading
+    String[] studentDataHeading = {"Registration No. ", "Student's Name", "Contact", "Email", "Address", "Course", "Gender"};  // for showing availabel student heading
     String[] userDataHeading = ("Teacher".equals(user)) ? teacherDataHeading : studentDataHeading;
     Object[][] userData;
     ArrayList<Object> userDataList = new ArrayList<>();

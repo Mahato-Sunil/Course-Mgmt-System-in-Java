@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import java.sql.*;
 import java.util.ArrayList;
 
-class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCredentials {
+class TeacherDashboard extends PublicMenu implements ActionListener, DatabaseCredentials {
     // Declare JFrame and other components
     JFrame frame = new JFrame("Teacher DashBoard");
     JPanel panel;
@@ -376,7 +376,7 @@ class TeacherDashboard extends publicMenu implements ActionListener, DatabaseCre
             System.out.println(editedRemark);
             System.out.println(editedScore);
         } else {
-            // User clicked Cancel or closed the dialog
+           JOptionPane.showMessageDialog(null, "Process Cancelled By User");
         }
     }
 

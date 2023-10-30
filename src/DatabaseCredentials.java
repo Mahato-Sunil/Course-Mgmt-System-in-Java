@@ -6,5 +6,6 @@ interface DatabaseCredentials {
 
     String studentUrl = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=studentdatabase";
     String teacherUrl = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=teacherdatabase";
+    String adminUrl = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=admindatabase";
     String courseUrl = "jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=coursedatabase";
 }

@@ -77,10 +77,10 @@ public class StudentDashboard extends MouseAdapter implements ActionListener, Da
         showEnrolledCourseData();
         showCourseData();
         // methods call for showing menu
-        publicMenu.setMenu();
-        publicMenu.setMenuDesign();
-        publicMenu.setMenuLogic();
-        frame.setJMenuBar(publicMenu.menu);
+        PublicMenu.setMenu();
+        PublicMenu.setMenuDesign();
+        PublicMenu.setMenuLogic();
+        frame.setJMenuBar(PublicMenu.menu);
     }
 
     // seting dimensions of the components

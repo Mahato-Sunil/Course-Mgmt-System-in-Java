@@ -42,10 +42,10 @@ public class StudentRegistration extends MouseAdapter implements ActionListener,
         populateCourseComboBox();
         addComp();
 //        menuitem call
-        publicMenu.setMenu();
-        publicMenu.setMenuDesign();
-        publicMenu.setMenuLogic();
-        frame.setJMenuBar(publicMenu.menu);
+        PublicMenu.setMenu();
+        PublicMenu.setMenuDesign();
+        PublicMenu.setMenuLogic();
+        frame.setJMenuBar(PublicMenu.menu);
     }
 
     public void setDimensions() {

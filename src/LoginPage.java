@@ -95,9 +95,17 @@ public class LoginPage implements ActionListener {
                 // creationg of validate class
                 Validate valid = new Validate(id, password);
                 switch (usermode) {
-                    case "Admin":
-                        message.setText("Admin  Panel Currently Not Available !");
-                        break;
+                    case "Admin": {
+                        if (valid.checkValidity(usermode)) {
+                            frame.setVisible(false);
+                            new AdminDashboard();
+                        } else {
+                            message.setForeground(Color.red);
+                            message.setText("Username or Password Incorrect !");
+                        }
+                    }
+                     break;
+
                     case "Teacher": {
                         if (valid.checkValidity(usermode)) {
                             frame.setVisible(false);
