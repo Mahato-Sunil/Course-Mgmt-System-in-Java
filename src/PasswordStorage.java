@@ -102,7 +102,7 @@ public class PasswordStorage implements ActionListener {
             String query = "INSERT INTO studentpassword (Username, salt, hashCode) VALUES(?,?,?)";
             String query1 = "INSERT INTO teacherpassword (Username, salt, hashCode) VALUES(?,?,?)";
 
-            String finalQuery = (url.equals("jdbc:sqlserver://DELL:1433;trustServerCertificate=true;databaseName=teacherdatabase")) ? query1 : query;     // checking between the teacher and student
+            String finalQuery = (url.equals("jdbc:mysql://localhost:3306/teacherdatabase")) ? query1 : query;     // checking between the teacher and student
 
             PreparedStatement statement = connect.prepareStatement(finalQuery);
 

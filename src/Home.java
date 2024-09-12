@@ -4,91 +4,96 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class Home extends CreateImageButton implements ActionListener {
-    // initialize the components
+    // Initialize the components
     JFrame frame = new JFrame("Course Management System");
-    JPanel panel1, panel2, panel3, panel4, panel5;
-    JLabel header, footer, theme;
-    JButton login, about, exit, register;
+    JPanel headerPanel, centerPanel, footerPanel;
+    JLabel header, footer;
+    JButton loginButton, aboutButton, exitButton, registerButton;
 
-    // constructor to initialize the functions
+    // Constructor to initialize the components
     Home() {
         initComp();
     }
 
     // initComp()
     void initComp() {
+        // Frame setup
         frame.setSize(1080, 720);
-        frame.setVisible(true);
-        frame.setLayout(new BorderLayout());
-        frame.setLocationRelativeTo(null);
+        frame.setLocationRelativeTo(null); // Center the frame on screen
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout()); // Main layout for the frame
 
-        // top panel
-        panel1 = new JPanel();
-        panel1.setPreferredSize(new Dimension(1080, 80)); // Use setPreferredSize
-        panel1.setBackground(Color.WHITE);
+        // Header panel setup
+        headerPanel = new JPanel();
+        headerPanel.setPreferredSize(new Dimension(1080, 80)); // Header height
+        headerPanel.setBackground(new Color(60, 179, 113)); // Minimalistic green color
 
-        header = new JLabel("WELCOME TO NEW ERA OF LEARNING !", JLabel.CENTER);
-        header.setFont(new Font(null, Font.BOLD, 30));
+        header = new JLabel("WELCOME TO NEW ERA OF LEARNING!", JLabel.CENTER);
+        header.setFont(new Font("SansSerif", Font.BOLD, 30));
+        headerPanel.add(header); // Add header to the header panel
 
-        // left panel
-        panel2 = new JPanel();
-        panel2.setPreferredSize(new Dimension(250, 630)); // Use setPreferredSize
-
-        login = createButton(null, "Image/login.png", 125, 125);
-        login.addActionListener(this);
-
-        exit = createButton(null, "Image/exit.png", 125, 125);
-        exit.addActionListener(this);
-
-        // right panel
-        panel3 = new JPanel();
-        panel3.setPreferredSize(new Dimension(250, 630)); // Use setPreferredSize
-
-        about = createButton(null, "Image/about.png", 125, 125);
-        about.addActionListener(this);
-
-        // footer
-        panel4 = new JPanel();
-        panel4.setPreferredSize(new Dimension(1080, 70)); // Use setPreferredSize
-        panel4.setBackground(new Color(214, 250, 250));
+        // Footer panel setup
+        footerPanel = new JPanel();
+        footerPanel.setPreferredSize(new Dimension(1080, 70)); // Footer height
+        footerPanel.setBackground(new Color(220, 220, 220)); // Light grey background
 
         footer = new JLabel("Copyright©️@SunilMahato", JLabel.CENTER);
+        footer.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        footerPanel.add(footer); // Add footer to the footer panel
 
-        //  center
-        panel5 = new JPanel();
-        panel5.setPreferredSize(new Dimension(500, 500)); // Use setPreferredSize
-        panel5.setBackground(Color.WHITE);
+        // Center panel setup (for buttons)
+        centerPanel = new JPanel();
+        centerPanel.setBackground(Color.WHITE);
+        centerPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 20)); // Centered horizontal layout
 
-        theme = new JLabel();
-        ImageIcon image = new ImageIcon("Image/theme.jpg");
-        Image scaledImg = image.getImage().getScaledInstance(500, 500, Image.SCALE_SMOOTH);
-        ImageIcon imageIcon = new ImageIcon(scaledImg);
-        theme.setIcon(imageIcon);
+        // Create and add buttons
+        loginButton = createButton("Login", "Image/login.png", 30, 30);
+        loginButton.addActionListener(this);
+        centerPanel.add(Box.createVerticalStrut(20)); // Space between top and first button
+        centerPanel.add(createCenteredPanel(loginButton)); // Centered login button
 
-        // adding the required components
-        panel1.add(header);
+        aboutButton = createButton("About Us", "Image/info.png", 30, 30);
+        aboutButton.addActionListener(this);
+        centerPanel.add(Box.createVerticalStrut(20)); // Space between buttons
+        centerPanel.add(createCenteredPanel(aboutButton)); // Centered about button
 
-        panel2.add(login);
-        panel2.add(about);
-        panel2.add(exit);
+        registerButton = createButton("Register", "Image/register.png", 30, 30);
+        registerButton.addActionListener(this);
+        centerPanel.add(Box.createVerticalStrut(20)); // Space between buttons
+        centerPanel.add(createCenteredPanel(registerButton)); // Centered register button
 
-        panel4.add(footer);
+        exitButton = createButton("Log Out", "Image/exit.png", 30, 30);
+        exitButton.addActionListener(this);
+        centerPanel.add(Box.createVerticalStrut(20)); // Space between buttons
+        centerPanel.add(createCenteredPanel(exitButton)); // Centered exit button
 
-        panel5.add(theme);
+        // Add panels to the frame
+        frame.add(headerPanel, BorderLayout.NORTH);
+        frame.add(centerPanel, BorderLayout.CENTER); // Add the center panel with buttons
+        frame.add(footerPanel, BorderLayout.SOUTH);
 
-        frame.add(panel1, BorderLayout.NORTH);
-        frame.add(panel2, BorderLayout.WEST);
-        frame.add(panel3, BorderLayout.EAST);
-        frame.add(panel4, BorderLayout.SOUTH);
-        frame.add(panel5, BorderLayout.CENTER);
+        frame.setVisible(true); // Make the frame visible
     }
+
+    // Helper method to center buttons horizontally
+    private JPanel createCenteredPanel(JButton button) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER)); // Center the button in the panel
+        panel.setOpaque(false); // Make panel transparent
+        panel.add(button);
+        return panel;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == login) {
+        if (e.getSource() == loginButton) {
             SwingUtilities.invokeLater(LoginPage::new);
-        } else if (e.getSource() == about)
-            JOptionPane.showMessageDialog(null, "Developer : Sunil Mahato \n Completed Year : 2023 \n Email : sunilmaht642@gmail.com \n Website : mahatosunil.com.np");
-        else if (e.getSource() == exit) System.exit(0);
+        } else if (e.getSource() == aboutButton) {
+            JOptionPane.showMessageDialog(null, "Developer: Sunil Mahato\nCompleted Year: 2023\nEmail: sunilmaht642@gmail.com\nWebsite: mahatosunil.com.np");
+        } else if (e.getSource() == registerButton) {
+            SwingUtilities.invokeLater(AdminDashboard::new);
+        } else if (e.getSource() == exitButton) {
+            System.exit(0);
+        }
     }
 }

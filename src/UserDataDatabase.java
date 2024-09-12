@@ -35,7 +35,7 @@ class UserDataDatabase implements DatabaseCredentials {
     // Static block to initialize static fields
     static {
         try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

@@ -33,14 +33,14 @@ public class Validate implements DatabaseCredentials {
             } else
                 System.out.println("Invalid");
 
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
             Connection connect = DriverManager.getConnection(URL, username, password);
             Statement statement = connect.createStatement();
 
             ResultSet result = statement.executeQuery(finalQuery);
             int i = 0;
             while (result.next()) {
-                orgUserName = result.getString("Username");
+                orgUserName = result.getString("username");
                 String userSalt = result.getString("salt");
                 String userHashCode = result.getString("hashCode");
 
